@@ -6,7 +6,7 @@
 [badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/cytokine_dict/test.yaml?branch=main
 [badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
 
-Human Cytokine Dictionary
+Human Cytokine Dictionary enables future users to analyse cytokine communication in any transcriptomic dataset.
 
 ## Getting started
 
