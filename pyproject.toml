@@ -36,7 +36,7 @@ dependencies = [
   "gseapy>=1.1.8",
   "tqdm>=4.67.1",
   "seaborn>=0.13.2",
-  "matplotlib-base>=3.10.1"
+  #"matplotlib-base>=3.10.1"
 ]
 optional-dependencies.dev = [
   "pre-commit",
