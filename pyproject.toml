@@ -9,7 +9,7 @@ description = "Human Cytokine Dictionary"
 readme = "README.md"
 license = { file = "LICENSE" }
 maintainers = [
-  { name = "Jenni Liu", email = "liujenni@umich.edu" },
+  { name = "Jenni Liu", email = "liu.jenni295@gmail.com" },
 ]
 authors = [
   { name = "Jenni Liu" },
@@ -26,6 +26,17 @@ dependencies = [
   "anndata",
   # for debug logging (referenced from the issue template)
   "session-info2",
+  "anndata>=0.11.4",
+  "scanpy>=1.11.1",
+  "numpy>=2.1.0",
+  "pandas>=2.2.3",
+  "scipy>=1.15.2",
+  "scikit-learn>=1.5.2",
+
+  "gseapy>=1.1.8",
+  "tqdm>=4.67.1",
+  "seaborn>=0.13.2",
+  "matplotlib-base>=3.10.1"
 ]
 optional-dependencies.dev = [
   "pre-commit",
