@@ -1,5 +1,6 @@
-from anndata import AnnData
+from anndata import AnnData 
 import pandas as pd
+import scanpy as sc
 
 def load_cytokine_dict_data():
   """
@@ -13,5 +14,5 @@ def load_MS_data():
   """
   To be changed. 
   """
-  adata = ad.read_h5ad("/home/icb/jenni.liu/projects/cytokine_dict_folder/Schafflick20_MS_CSF.h5ad")
+  adata = sc.read_h5ad("/home/icb/jenni.liu/projects/cytokine_dict_folder/Schafflick20_MS_CSF.h5ad")
   return adata
