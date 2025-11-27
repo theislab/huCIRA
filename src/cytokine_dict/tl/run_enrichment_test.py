@@ -6,6 +6,12 @@ import seaborn as sns
 import gseapy as gp
 from typing import Tuple, Literal
 
+
+def vprint(msg, verbose):
+    if verbose:
+        print(msg)
+
+
 def get_genesets(
     adata: AnnData,
     df_hcd_all: pd.DataFrame,
