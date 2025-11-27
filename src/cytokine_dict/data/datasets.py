@@ -5,7 +5,7 @@ def load_cytokine_dict_data():
   """
   To be changed. 
   """
-  cytokine_dict = pd.read_csv("/home/icb/jenni.liu/projects/cytokine_dict_folder/DEGs_all_with_pbs_DE_count.csv", index_col=0))
+  cytokine_dict = pd.read_csv("/home/icb/jenni.liu/projects/cytokine_dict_folder/DEGs_all_with_pbs_DE_count.csv", index_col=0)
   return cytokine_dict
 
 
