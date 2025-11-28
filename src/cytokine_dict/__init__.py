@@ -12,7 +12,7 @@ from .tl import run_enrichment_test, check_robustness
 __all__ = ["run_enrichment_test", "check_robustness"]
 
 from .pl import create_heatmap
-__all__ = ["create_heatmap.py"]
+__all__ = ["create_heatmap"]
 
 
 __version__ = version("cytokine_dict")
