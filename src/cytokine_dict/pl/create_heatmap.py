@@ -83,7 +83,7 @@ def create_heatmap(
     plt.ylabel("")
     ax.tick_params(axis='both', labelright=False, labelleft=True, length=0)
     ax.set_xticks(0.5+np.arange(df_nes.shape[1]), format_celltype_combo_labels(df_nes.columns), family="sans-serif", fontsize=6, rotation=90)
-    x.set_yticks(0.5+np.arange(df_nes.shape[0]), format_program_labels(df_nes.index), family="sans-serif", fontsize=6)
+    ax.set_yticks(0.5+np.arange(df_nes.shape[0]), format_program_labels(df_nes.index), family="sans-serif", fontsize=6)
    
     if path:
         plt.savefig(path, dpi=400, bbox_inches="tight", pad_inches=0)
