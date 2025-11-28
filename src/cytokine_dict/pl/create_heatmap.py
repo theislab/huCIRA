@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
+import seaborn as sns
 
 
 def format_celltype_combo_labels(x):
@@ -29,7 +30,7 @@ def create_heatmap(
         .to_frame()\
         .reset_index()\
         .pivot(index="cytokine", columns="celltype_combo", values="NES")
-    
+    print(df_nes)
     df_nes = df_nes.loc[:, celltypes[np.isin(celltypes, df_nes.columns)]]
     with warnings.catch_warnings():
         warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -57,6 +58,11 @@ def create_heatmap(
     else:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.set_facecolor("lightgray")
+
+    print(df_nes)
+    print(df_annot)
+    print(print(df_nes.dtypes))
+    df_nes = df_nes.apply(pd.to_numeric, errors='coerce')
     heatmap_out = sns.heatmap(
         df_nes,
         center=0,
@@ -65,7 +71,7 @@ def create_heatmap(
         cmap="RdBu_r",
         square=True,
         annot=df_annot,
-        annot_kws={"fontsize": 6, "family": "Arial"},
+        annot_kws={"fontsize": 6, "family": "sans-serif"},
         fmt="",
         ax=ax,
         cbar=False,
@@ -76,8 +82,9 @@ def create_heatmap(
     plt.xlabel("")
     plt.ylabel("")
     ax.tick_params(axis='both', labelright=False, labelleft=True, length=0)
-    ax.set_xticks(0.5+np.arange(df_nes.shape[1]), format_celltype_combo_labels(df_nes.columns), family="Arial", fontsize=6, rotation=90)
-    ax.set_yticks(0.5+np.arange(df_nes.shape[0]), format_program_labels(df_nes.index), family="Arial", fontsize=6)
+    ax.set_xticks(0.5+np.arange(df_nes.shape[1]), format_celltype_combo_labels(df_nes.columns), family="sans-serif", fontsize=6, rotation=90)
+    x.set_yticks(0.5+np.arange(df_nes.shape[0]), format_program_labels(df_nes.index), family="sans-serif", fontsize=6)
+   
     if path:
         plt.savefig(path, dpi=400, bbox_inches="tight", pad_inches=0)
     plt.show()
