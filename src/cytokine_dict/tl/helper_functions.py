@@ -9,14 +9,14 @@ def create_celltype_combos(adata_celltypes=None, hcd_celltypes=None):
 
     Parameters
     ----------
-    adata_celltypes
+    - adata_celltypes
         ordered celltypes of interest from adata object (matching with hcd_celltypes)
-    hcd_celltypes
+    - hcd_celltypes
         ordered celltypes of interest from human cytokine dictionary (matching with adata_celltypes)
 
     Returns
     -------
-    celltype_combo
+    - celltype_combo
         A tuple of matched celltype sets. Example output:
         celltype_combo = (('B cell', 'B'),
                          ('CD4-positive, alpha-beta T cell', 'CD4'),

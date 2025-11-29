@@ -163,16 +163,39 @@ def run_enrichment_test(
     verbose: bool = True,
     threads: int = 6,
 ) -> pd.DataFrame:
-    """Run a tool on the AnnData object.
+    """Computes cytokine enrichment activity in one celltype using GSEA scoring.
+
+    1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
+    2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
+    3. Computes enrichment of each cytokine by matching their associated gene set in the ranked list.
 
     Parameters
     ----------
-    adata
-        The AnnData object to preprocess.
+    - adata
+        The query adata object.
+    - df_hcd_all
+        Human Cytokine Dictionary
+    - celltype
+        A tuple with the celltype name of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+    - direction
+        "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
+    - threshold_pval
+        Constructs the gene set: Filters for genes in human df_hcd_all with an adj. p-val lower than threshold_pval.
+    - threshold_lfc
+        Constructs the gene set: Filters for genes in human df_hcd_all that are up/downregulated with a lfc higher than threshold_lfc.
+    - threshold_expression
+        Filters out genes with mean gene expression across all cells lower than threshold_expression.
+    - contrast_column
+        Column name of adata.obs object that stores the biological condition of samples.
+    - celltype_column
+        Column name of adata.obs object that stores the cell types.
+    - contrasts
+        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
 
     Returns
     -------
-    Some integer value.
+    - results
+        A DataFrame with all computed enrichment scores and statistical parameters. Not filtered by significance or robustness yet.
     """
     if not isinstance(contrasts, list):
         assert isinstance(contrasts, tuple)

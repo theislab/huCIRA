@@ -35,19 +35,19 @@ def check_robustness(
 
     Parameters
     ----------
-    results
+    - results
         The DataFrame output from run_enrichment_test().
-    threshold_qval
+    - threshold_qval
         Threshold that checks significance of results (leniently). Result is considered significant if its q-val is below this threshold.
-    threshold_valid
+    - threshold_valid
         The fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
-    threshold_below_alpha
+    - threshold_below_alpha
         The fraction of results that need to be significant
 
 
     Returns
     -------
-    robust_results
+    - robust_results
         DataFrame with robust and significant cytokine enrichments (includes min and max of NES)
 
     """
@@ -130,23 +130,23 @@ def get_robust_significant_results(
 
     Parameters
     ----------
-    results
+    - results
         The DataFrame output from run_enrichment_test().
-    alphas
+    - alphas
         List of thresholds (q-val) to check significance of results. Result is considered significant if its q-val is below this threshold.
-    threshold_valid
+    - threshold_valid
         The fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
-    threshold_below_alpha
+    - threshold_below_alpha
         The fraction of results that need to be significant
 
 
     Returns
     -------
-    results_pivot
+    - results_pivot
         DataFrame with robust and significant cytokine enrichments (includes mean of NES)
-    df_annot
+    - df_annot
         DataFrame visualizing significance of a cytokine-celltype pair as stars. (0.1: *, 0.05: **, 0.01: ***)
-    results_robust
+    - results_robust
         DataFrame with robust and significant cytokine enrichments (includes min and max of NES)
     """
     # default significant values (matching significance stars)
