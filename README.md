@@ -6,7 +6,7 @@
 [badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/cytokine_dict/test.yaml?branch=main
 [badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
 
-Human Cytokine Dictionary enables future users to analyse cytokine communication in any transcriptomic dataset.
+Human Cytokine Dictionary enables future users to analyze cytokine communication in any transcriptomic dataset.
 
 ## Getting started
 
@@ -15,7 +15,7 @@ in particular, the [API documentation][].
 
 ## Installation
 
-You need to have Python 3.11 or newer installed on your system.
+You need to have 3.11 <= Python < 3.14 installed on your system. 
 If you don't have Python installed, we recommend installing [uv][].
 
 There are several alternative options to install cytokine_dict:
