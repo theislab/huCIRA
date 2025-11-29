@@ -84,13 +84,13 @@ def plot_significant_results(results_pivot, df_annot, celltype_ordered, fontsize
     plt.show()
 
     if save_fig:
-    plt.savefig(
-        os.path.join(fig_path, "significant_results.svg"), 
-        bbox_inches="tight", 
-        pad_inches=0, 
-        dpi=500,
-        # transparent=True,
-    )
+        plt.savefig(
+            os.path.join(fig_path, "significant_results.svg"), 
+            bbox_inches="tight", 
+            pad_inches=0, 
+            dpi=500,
+            # transparent=True,
+        )
 
     return
 
