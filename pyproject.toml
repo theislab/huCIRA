@@ -20,7 +20,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
+  # "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   "anndata",
@@ -81,12 +81,12 @@ scripts.clean = "git clean -fdX -- {args:docs}"
 # Test the lowest and highest supported Python versions with normal deps
 [[tool.hatch.envs.hatch-test.matrix]]
 deps = [ "stable" ]
-python = [ "3.11", "3.14" ]
+python = [ "3.11"] # removed 3.14, numba isn't supported yet.
 
-# Test the newest supported Python version also with pre-release deps
-[[tool.hatch.envs.hatch-test.matrix]]
-deps = [ "pre" ]
-python = [ "3.14" ]
+## Test the newest supported Python version also with pre-release deps
+# [[tool.hatch.envs.hatch-test.matrix]]
+# deps = [ "pre" ]
+# python = [ "3.14" ]
 
 [tool.hatch.envs.hatch-test]
 features = [ "dev", "test" ]
