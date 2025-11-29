@@ -3,6 +3,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
+
+
 def _check_robustness_fractions(
     df_pivot, 
     threshold_qval=0.1, # adjusted p value
@@ -17,11 +19,13 @@ def _check_robustness_fractions(
     is_robust = (frac_pval_below_alpha > threshold_below_alpha) & (frac_valid_results > threshold_valid)
     return frac_valid_results, frac_pval_below_alpha, is_robust
 
+
+
 def check_robustness(
     all_results,
-    THRESHOLD_QVAL = 0.1,
-    THRESHOLD_VALID = 0.1,
-    THRESHOLD_BELOW_ALPHA = 0.9,
+    threshold_qval = 0.1,
+    threshold_valid = 0.1,
+    threshold_below_alpha = 0.9,
 ):
     
     all_thresholds_expression = all_results.threshold_expression.sort_values(ascending = False).unique()
@@ -48,9 +52,9 @@ def check_robustness(
                 df_pivot = df_merged.loc[all_thresholds_expression, all_thresholds_lfc].astype(float)
                 frac_valid_results, frac_pval_below_alpha, is_robust = _check_robustness_fractions(
                     df_pivot, 
-                    threshold_qval=THRESHOLD_QVAL, 
+                    threshold_qval=threshold_qval, 
                     threshold_valid=THRESHOLD_VALID,
-                    threshold_below_alpha=THRESHOLD_BELOW_ALPHA
+                    threshold_below_alpha=threshold_below_alpha
                 )
                 
                 if is_robust:
@@ -59,8 +63,8 @@ def check_robustness(
                             celltype_combo, contrast, cytokine,
                             frac_valid_results, frac_pval_below_alpha, is_robust,
                             results_ct_cy.NES.min(), results_ct_cy.NES.max(),
-                            THRESHOLD_QVAL,
-                            THRESHOLD_BELOW_ALPHA,
+                            threshold_qval,
+                            threshold_below_alpha,
                         )
                     )
         
@@ -69,3 +73,47 @@ def check_robustness(
         axis=1
     )
     return robust_results
+
+
+
+def get_robust_significant_results(
+    results,
+    alphas = [0.1, 0.05, 0.01],
+    threshold_valid = 0.1,
+    threshold_below_alpha = 0.9,
+):
+
+    results_robust = []
+    for alpha in alphas:
+        results_robust.append(check_robustness(results, threshold_qval=alpha, threshold_valid=threshold_valid, threshold_below_alpha=threshold_below_alpha))
+        
+    results_robust = pd.concat(results_robust)
+    results_robust = results_robust.groupby(["contrast", "celltype_combo", "cytokine"])["qval_threshold"].min().to_frame().reset_index()
+    
+    results_mean = results.fillna(0).groupby(["contrast", "celltype_combo", "cytokine"])["NES"].mean().to_frame().reset_index()
+    results_pivot = results_mean.pivot(
+        index="cytokine",
+        columns="celltype_combo",
+        values="NES",
+    )
+    df_annot = results_pivot.copy()
+    with warnings.catch_warnings():
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        df_annot[:] = ""
+    for cytokine in df_annot.index:
+        for celltype in df_annot.columns:
+            qval = results_robust.loc[(results_robust.cytokine == cytokine) & (results_robust.celltype_combo == celltype)].qval_threshold
+            if len(qval) != 0:
+                qval = qval.values[0]
+                if qval == 0.1:
+                    df_annot.loc[cytokine, celltype] = "*"
+                if qval == 0.05:
+                    df_annot.loc[cytokine, celltype] = "**"
+                if qval == 0.01:
+                    df_annot.loc[cytokine, celltype] = "***"
+
+    return results_pivot, df_annot, results_robust
+
+
+
+    
