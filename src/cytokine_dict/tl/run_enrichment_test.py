@@ -153,7 +153,7 @@ def run_enrichment_test(
     direction: str = "upregulated",
     threshold_pval: float = 0.01,
     threshold_lfc: float = 1.,
-    threshold_expression: float = 0,
+    threshold_expression: float = 0.0,
     contrast_column: str = "disease_state",
     celltype_column: str = "disease_state",
     contrasts: Tuple[str, str] | list[Tuple[str, str]] = None,
@@ -172,7 +172,12 @@ def run_enrichment_test(
         
     celltype_adata = celltype[0]
     celltype_signature = celltype[1]
-    
+
+    # allows potential loop of celltype combos to continue
+    if celltype_adata not in adata.obs[celltype_column].unique():
+        print(f"'{celltype_adata}' is not present in celltype_column ({celltype_column}) of query adata. Skipping enrichment test of this celltype.\n") 
+        return None
+
     # filter for cell type
     vprint("Filter for cell type:", verbose)
     adata = adata[adata.obs[celltype_column] == celltype_adata]
