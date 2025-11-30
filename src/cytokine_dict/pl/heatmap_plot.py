@@ -3,8 +3,8 @@ import warnings
 import numpy as np
 import pandas as pd
 import os
-
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def format_cytokine_names(x):
     if isinstance(x, (list, np.ndarray, pd.Index)):
@@ -46,11 +46,17 @@ def format_celltype_names(x):
 '''
 
 
-def plot_significant_results(results_pivot, df_annot, celltype_ordered, fontsize=6, save_fig=False, fig_path=""):
+def plot_significant_results(results_pivot, df_annot, selected_celltypes=None, selected_cytokines=None, fontsize=6, save_fig=False, fig_path=""):
 
-    # Why pivot at all?
-    results_pivot = results_pivot.T.loc[CELLTYPE_ORDER].T
+    
+    if selected_celltypes:
+        results_pivot = results_pivot.T.loc[selected_celltypes].T
+        df_annot = df_annot.T.loc[selected_celltypes].T
 
+    if selected_cytokines:
+        results_pivot = results_pivot.loc[selected_cytokines]
+        df_annot = df_annot.loc[selected_cytokines]
+    
     # Plot
     fig, ax = plt.subplots(1,1,figsize=(8, 8)) #?
     sns.heatmap(
