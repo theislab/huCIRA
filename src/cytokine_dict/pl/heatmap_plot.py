@@ -18,85 +18,138 @@ def format_cytokine_names(x):
     return text
 
 
-'''
-def format_celltype_names(x):
-    if isinstance(x, (list, np.ndarray, pd.Index)):
-        return [format_celltype_names(_x) for _x in x]
-    text = x.get_text() if hasattr(x, 'get_text') else x
-    # text = text.replace("CD4-positive, alpha-beta T cell", r"CD4, $\alpha$-$\beta$ T")
-    text = text.replace("CD4-positive, alpha-beta T cell", r"CD4 T")
-    # text = text.replace("CD8-positive, alpha-beta T cell", r"CD8, $\alpha$-$\beta$ T")
-    text = text.replace("CD8-positive, alpha-beta T cell", r"CD8 T")
-    text = text.replace("conventional dendritic cell", "cDC")
-    text = text.replace("natural killer cell", "NK")
-    if not text.startswith("NK"):
-        text = text.split("(")[0]
-    else:
-        #text = text.replace("CD56-bright_NK", "CD56hi")
-        #text = text.replace("CD56-dim_NK", "CD56low")
-        #text = text.replace("NK_CD56hi", "CD56hi")
-        text = text.replace("NK_CD56hi", "hi")
-        #text = text.replace("NK_CD56low", "CD56low")
-        text = text.replace("NK_CD56low", "low")
-    if text.startswith("non-classical monocyte"):
-        text =  "nc. Mono."
-    elif text.startswith("classical monocyte"):
-        text =  "c. Mono."
-    return text
-'''
 
+def plot_significant_results(robust_results_dict=None, 
+                             results_pivot=None, 
+                             df_annot=None, 
+                             selected_celltypes=None, 
+                             selected_cytokines=None, 
+                             fontsize=6, 
+                             save_fig=False, 
+                             fig_path=""):
 
-def plot_significant_results(results_pivot, df_annot, selected_celltypes=None, selected_cytokines=None, fontsize=6, save_fig=False, fig_path=""):
-
+    """ Optional heatmap plotting aid: Plots either the robust results from a dict of contrasts or individually per contrast.
     
-    if selected_celltypes:
-        results_pivot = results_pivot.T.loc[selected_celltypes].T
-        df_annot = df_annot.T.loc[selected_celltypes].T
-
-    if selected_cytokines:
-        results_pivot = results_pivot.loc[selected_cytokines]
-        df_annot = df_annot.loc[selected_cytokines]
+    Parameters
+    ----------
+    - robust_results_dict:
+        robust enrichment score dictionary from get_significant_results(). If this argument is present it has precedence over results_pivot and df_annot.
+    - results_pivot:
+        pandas DataFrame of robust enrichment for results from one contrast  
+    - df_annot:
+        pandas DataFrame of robust enrichment significance annotations for results from one contrast
+    - selected_celltypes:
+        Can choose to only visualize selected celltypes out of available from robust results. Must be in robust results, otherwise error.
+    - selected_cytokines:
+        Can choose to only visualize selected celltypes out of available from robust results. Must be in robust results, otherwise error.
     
-    # Plot
-    fig, ax = plt.subplots(1,1,figsize=(8, 8)) #?
-    sns.heatmap(
-        results_pivot,
-        square=True,
-        annot=df_annot,
-        cmap="RdBu_r",
-        center=0,
-        # vmin=vmin,
-        # vmax=vmax,
-        annot_kws={"fontsize": 6, "family": "sans-serif"},
-        linecolor="white",
-        fmt="",
-        linewidths=0.5,
-        cbar=False,
-        ax=ax,
-    )
+    Returns
+    ----------
+    - Nothing. Plotting function only
 
-    plt.xlabel("")
-    plt.ylabel("")
-    ax.set_facecolor("lightgray")
-    ax.tick_params(axis='both', which='both', length=0)
-
-    # ToDo: Decide either delete function or make more general.
-    # celltype_labels = format_celltype_names(results_pivot.columns)
-    celltype_labels = results_pivot.columns
-    plt.xticks(0.5+np.arange(results_pivot.shape[1]), celltype_labels, fontsize=fontsize, family="sans-serif", rotation=90, ha="center")
+    """
     
-    cytokine_labels = format_cytokine_names(results_pivot.index)
-    plt.yticks(0.5+np.arange(results_pivot.shape[0]), cytokine_labels, fontsize=fontsize, family="sans-serif", rotation=0, ha="right")
-    plt.show()
+    
+    # Case 1: robust_results_dict is provided. This precedes the other arguments. 
+    if robust_results_dict is not None and len(robust_results_dict) > 0:
+        n = len(robust_results_dict)
+        fig, axes = plt.subplots(1, n, squeeze=False)
 
-    if save_fig:
-        plt.savefig(
-            os.path.join(fig_path, "significant_results.svg"), 
-            bbox_inches="tight", 
-            pad_inches=0, 
-            dpi=500,
-            # transparent=True,
+        for i, (contrast, (pivot, annot, _)) in enumerate(robust_results_dict.items()):
+            ax = axes[0, i]
+
+            # Apply filtering if requested
+            if selected_celltypes:
+                pivot = pivot.T.loc[selected_celltypes].T
+                annot = annot.T.loc[selected_celltypes].T
+            if selected_cytokines:
+                pivot = pivot.loc[selected_cytokines]
+                annot = annot.loc[selected_cytokines]
+
+            sns.heatmap(
+                pivot,
+                square=True,
+                annot=annot,
+                cmap="RdBu_r",
+                center=0,
+                annot_kws={"fontsize": fontsize, "family": "sans-serif"},
+                fmt="",
+                linewidths=0.5,
+                linecolor="white",
+                cbar=True,
+                ax=ax
+            )
+
+            ax.set_title(contrast, fontsize=10)
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+            ax.set_facecolor("lightgray")
+            ax.tick_params(axis='both', which='both', length=0)
+
+            # Axis labels
+            ax.set_xticks(0.5 + np.arange(pivot.shape[1]))
+            ax.set_xticklabels(pivot.columns, fontsize=fontsize, rotation=90, ha="center")
+            ax.set_yticks(0.5 + np.arange(pivot.shape[0]))
+            ax.set_yticklabels(format_cytokine_names(pivot.index), fontsize=fontsize, rotation=0, ha="right")
+                    
+        if save_fig:
+            plt.savefig(
+                os.path.join(fig_path, f"all_contrasts_significant_results.svg"),
+                bbox_inches="tight",
+                pad_inches=0,
+                dpi=500
+            )
+        plt.tight_layout()
+        plt.show()
+        return
+        
+   # Case 2: single robust_result is provided, only the one chosen contrast comparison is plotted.
+    if isinstance(results_pivot, pd.DataFrame) and isinstance(df_annot, pd.DataFrame):
+
+        if selected_celltypes:
+            results_pivot = results_pivot.T.loc[selected_celltypes].T
+            df_annot = df_annot.T.loc[selected_celltypes].T
+        if selected_cytokines:
+            results_pivot = results_pivot.loc[selected_cytokines]
+            df_annot = df_annot.loc[selected_cytokines]
+        
+        fig, ax = plt.subplots(1, 1)
+        sns.heatmap(
+            results_pivot,
+            square=True,
+            annot=df_annot,
+            cmap="RdBu_r",
+            center=0,
+            annot_kws={"fontsize": fontsize, "family": "sans-serif"},
+            fmt="",
+            linewidths=0.5,
+            linecolor="white",
+            cbar=True,
+            ax=ax
         )
+        ax.set_title("Contrast1_vs_Contrast2", fontsize=10)
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        ax.set_facecolor("lightgray")
+        ax.tick_params(axis='both', which='both', length=0)
 
+        # Axis labels
+        ax.set_xticks(0.5 + np.arange(results_pivot.shape[1]))
+        ax.set_xticklabels(results_pivot.columns, fontsize=fontsize, rotation=90, ha="center")
+        ax.set_yticks(0.5 + np.arange(results_pivot.shape[0]))
+        ax.set_yticklabels(format_cytokine_names(results_pivot.index), fontsize=fontsize, rotation=0, ha="right")
+
+        plt.show()
+
+        if save_fig:
+            plt.savefig(
+                os.path.join(fig_path, "significant_results.svg"),
+                bbox_inches="tight",
+                pad_inches=0,
+                dpi=500
+            )
+        return
+
+    print("Nothing was plotted. Check input data!")
     return
 
