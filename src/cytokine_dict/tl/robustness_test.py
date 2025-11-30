@@ -175,11 +175,20 @@ def get_robust_significant_results(
     results_mean = (
         results.fillna(0).groupby(["contrast", "celltype_combo", "cytokine"])["NES"].mean().to_frame().reset_index()
     )
-    results_pivot = results_mean.pivot(
-        index="cytokine",
-        columns="celltype_combo",
-        values="NES",
-    )
+
+    if len(results.contrast.unique()) > 1:
+        results_pivot = results_mean.pivot(
+            index=["contrast", "cytokine"],
+            columns="celltype_combo",
+            values="NES",
+        )
+    else:
+        results_pivot = results_mean.pivot(
+            index="cytokine",
+            columns="celltype_combo",
+            values="NES",
+        )
+        
     df_annot = results_pivot.copy()
     with warnings.catch_warnings():
         warnings.simplefilter(action="ignore", category=FutureWarning)
