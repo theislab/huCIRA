@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-
+from IPython.display import display
 
 def _check_robustness_fractions(
     df_pivot,
@@ -122,10 +122,11 @@ def get_robust_significant_results(
     alphas=None,
     threshold_valid=0.1,
     threshold_below_alpha=0.9,
+    display_df_nicely=True
 ):
-    """Filters for robust and signifcant results out of original enrichments (run_enrichment_test() output)
+    """Filters for robust and signifcant results from original enrichments (run_enrichment_test() output)
 
-    Returns only the enrichments that are statistically significant (q-val), and stable across many different tests.
+    Returns only the enrichments that are statistically significant (q-val), and stable across many different tests (per contrast).
     Calls check_robustness for different qval thresholds to explore more stringent significance thresholds. Use for visualization of results (e.g. in a heatmap).
 
     Parameters
@@ -139,15 +140,12 @@ def get_robust_significant_results(
     - threshold_below_alpha
         The fraction of results that need to be significant
 
-
     Returns
     -------
-    - results_pivot
-        DataFrame with robust and significant cytokine enrichments (includes mean of NES)
-    - df_annot
-        DataFrame visualizing significance of a cytokine-celltype pair as stars. (0.1: *, 0.05: **, 0.01: ***)
-    - results_robust
-        DataFrame with robust and significant cytokine enrichments (includes min and max of NES)
+    - robust_results_dict
+        Dictionary mapping contrasts to lists of the enrichment score results (pivot_df), their significance annotations (annot_df), and significance thresholds (robust_sub).
+        robust_results_dict = {contrast1: [pivot_df1, annot_df1, robust_sub1],
+                               contrast2: [pivot_df2, annot_df2, robust_sub2]}
     """
     # default significant values (matching significance stars)
     if alphas is None:
@@ -171,40 +169,53 @@ def get_robust_significant_results(
         .to_frame()
         .reset_index()
     )
-
+    
     results_mean = (
-        results.fillna(0).groupby(["contrast", "celltype_combo", "cytokine"])["NES"].mean().to_frame().reset_index()
+        results.assign(NES=pd.to_numeric(results.NES, errors='coerce'))  # ensure numeric
+               .fillna({'NES': 0})  # only fill NES
+               .groupby(["contrast", "celltype_combo", "cytokine"])["NES"]
+               .mean()
+               .to_frame()
+               .reset_index()
     )
 
-    if len(results.contrast.unique()) > 1:
-        results_pivot = results_mean.pivot(
-            index=["contrast", "cytokine"],
-            columns="celltype_combo",
-            values="NES",
-        )
-    else:
-        results_pivot = results_mean.pivot(
+    # Create separate robust results dict for every contrast pair.
+    robust_results_dict = {}
+    for contrast in results.contrast.unique():
+        subset = results_mean[results_mean.contrast == contrast]
+        pivot_df = subset.pivot(
             index="cytokine",
             columns="celltype_combo",
-            values="NES",
+            values="NES"
         )
-        
-    df_annot = results_pivot.copy()
-    with warnings.catch_warnings():
-        warnings.simplefilter(action="ignore", category=FutureWarning)
-        df_annot[:] = ""
-    for cytokine in df_annot.index:
-        for celltype in df_annot.columns:
-            qval = results_robust.loc[
-                (results_robust.cytokine == cytokine) & (results_robust.celltype_combo == celltype)
-            ].qval_threshold
-            if len(qval) != 0:
-                qval = qval.values[0]
-                if qval == 0.1:
-                    df_annot.loc[cytokine, celltype] = "*"
-                if qval == 0.05:
-                    df_annot.loc[cytokine, celltype] = "**"
-                if qval == 0.01:
-                    df_annot.loc[cytokine, celltype] = "***"
+    
+        # create empty annotation df
+        annot_df = pivot_df.copy().astype(object)  
+        annot_df[:] = ""
+    
+        # fill annotations based on results_robust
+        robust_sub = results_robust[results_robust.contrast == contrast]
+        for cytokine in annot_df.index:
+            for celltype in annot_df.columns:
+                qval = robust_sub.loc[
+                    (robust_sub.cytokine == cytokine) &
+                    (robust_sub.celltype_combo == celltype),
+                    "qval_threshold"
+                ]
+                if len(qval) != 0:
+                    qval = qval.values[0]
+                    if qval == 0.1:
+                        annot_df.loc[cytokine, celltype] = "*"
+                    elif qval == 0.05:
+                        annot_df.loc[cytokine, celltype] = "**"
+                    elif qval == 0.01:
+                        annot_df.loc[cytokine, celltype] = "***"
+    
+        robust_results_dict[contrast] = [pivot_df, annot_df, robust_sub]
 
-    return results_pivot, df_annot, results_robust
+    if display_df_nicely:
+        for contrast in robust_results_dict.keys():
+            print(f"Contrast:{contrast}")
+            display(robust_results_dict[contrast][0])
+
+    return robust_results_dict
