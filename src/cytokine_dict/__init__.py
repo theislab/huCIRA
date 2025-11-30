@@ -4,7 +4,7 @@ from importlib.metadata import version
 
 from .data import load_cytokine_dict_data, load_MS_data
 from .tl import check_robustness, create_celltype_combos, get_robust_significant_results, run_enrichment_test
-from .pl import create_heatmap, heatmap_plot
+from .pl import create_heatmap, heatmap_plot, plot_significant_results
 
 __all__ = [
     "load_cytokine_dict_data",
@@ -15,6 +15,7 @@ __all__ = [
     "run_enrichment_test",
     "create_heatmap",
     "heatmap_plot",
+    "plot_significant_results"
 ]
 
 
