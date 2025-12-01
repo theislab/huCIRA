@@ -6,7 +6,8 @@ from bokeh.palettes import all_palettes
 
 import re
 import os
-import warningsimport numpy as np
+import warnings
+import numpy as np
 import pandas as pd
 import scanpy as sc
 import seaborn as sns
