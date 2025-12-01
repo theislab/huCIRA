@@ -16,7 +16,8 @@ __all__ = [
     "create_heatmap",
     "heatmap_plot",
     "plot_significant_results",
-    "plot_communication"
+    "plot_communication",
+    "get_senders_and_receivers"
 ]
 
 
