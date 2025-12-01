@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Union, List
 
 import gseapy as gp
 import numpy as np
@@ -116,13 +116,13 @@ def _compute_s2n(
 
 
 def _compute_ranking_statistic(
-    adata: AnnData, contrast_column: str, contrasts: list[tuple[str, str]]
+    adata: AnnData, contrast_column: str, contrasts_combo: list[tuple[str, str]]
 ) -> (pd.DataFrame, pd.DataFrame):
     rnk_stats, num_cells = [], []
     precomputed_stats = {}
 
     conditions = []
-    for condition in contrasts:
+    for condition in contrasts_combo:
         conditions.extend([condition[0], condition[1]])
     conditions = np.unique(conditions)
 
@@ -131,7 +131,7 @@ def _compute_ranking_statistic(
             adata, contrast_column=contrast_column, condition=condition
         )
 
-    for condition in contrasts:
+    for condition in contrasts_combo:
         _rnk_stats, _num_cells = _compute_s2n(
             adata,
             contrast_column=contrast_column,
@@ -144,26 +144,36 @@ def _compute_ranking_statistic(
     return pd.concat(rnk_stats, axis=1), pd.concat(num_cells, axis=0)
 
 
-def run_enrichment_test(
-    adata: AnnData,
-    df_hcd_all: pd.DataFrame,
-    celltype: tuple[str, str] = ("B cell", "B"),
-    direction: str = "upregulated",
-    threshold_pval: float = 0.01,
+
     threshold_lfc: float = 1.0,
     threshold_expression: float = 0.0,
+
+    
+def run_one_enrichment_test(
+    adata: AnnData,
+    df_hcd_all: pd.DataFrame,
+    celltype_combo: tuple[str, str] = ("B cell", "B"),
+    celltype_column: str = "cell_type",
+    contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
     contrast_column: str = "disease_state",
-    celltype_column: str = "disease_state",
-    contrasts: tuple[str, str] | list[tuple[str, str]] = None,
+    direction: str = "upregulated",
+    
+    # Robustness parameters
+    threshold_lfc: Union[float, List[float]] = 1.0,
+    threshold_expression: Union[float, List[float]] = 0.0,
+    threshold_pval: float = 0.01,
+    
+    # GSEA parameters
     min_size: int = 10,
     max_size: int = 1000,
     permutation_num: int = 1000,
     weight: float = 1.0,
     seed: int = 2025,
-    verbose: bool = True,
+    verbose: bool = False,
     threads: int = 6,
+
 ) -> pd.DataFrame:
-    """Computes cytokine enrichment activity in one celltype using GSEA scoring.
+    """Computes cytokine enrichment activity in one celltype using GSEA scoring. 
 
     1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
     2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
@@ -175,8 +185,14 @@ def run_enrichment_test(
         The query adata object.
     - df_hcd_all
         Human Cytokine Dictionary
-    - celltype
+    - celltype_combo
         A tuple with the celltype name of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+    - celltype_column
+        Column name of adata.obs object that stores the cell types.
+    - contrasts_combo
+        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
+    - contrast_column
+        Column name of adata.obs object that stores the biological condition of samples.
     - direction
         "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
     - threshold_pval
@@ -185,24 +201,18 @@ def run_enrichment_test(
         Constructs the gene set: Filters for genes in human df_hcd_all that are up/downregulated with a lfc higher than threshold_lfc.
     - threshold_expression
         Filters out genes with mean gene expression across all cells lower than threshold_expression.
-    - contrast_column
-        Column name of adata.obs object that stores the biological condition of samples.
-    - celltype_column
-        Column name of adata.obs object that stores the cell types.
-    - contrasts
-        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
 
     Returns
     -------
     - results
         A DataFrame with all computed enrichment scores and statistical parameters. Not filtered by significance or robustness yet.
     """
-    if not isinstance(contrasts, list):
-        assert isinstance(contrasts, tuple)
-        contrasts = [contrasts]
+    if not isinstance(contrasts_combo, list):
+        assert isinstance(contrasts_combo, tuple)
+        contrasts_combo = [contrasts_combo]
 
-    celltype_adata = celltype[0]
-    celltype_signature = celltype[1]
+    celltype_adata = celltype_combo[0]
+    celltype_signature = celltype_combo[1]
 
     # allows potential loop of celltype combos to continue
     if celltype_adata not in adata.obs[celltype_column].unique():
@@ -237,7 +247,7 @@ def run_enrichment_test(
     # compute ranking stat
     _vprint("Get ranking stats:", verbose)
     rnk_stats, num_cells_per_condition = _compute_ranking_statistic(
-        adata, contrast_column=contrast_column, contrasts=contrasts
+        adata, contrast_column=contrast_column, contrasts_combo=contrasts_combo
     )
     _vprint("Get ranking stats: done.", verbose)
     results = []
@@ -296,3 +306,104 @@ def run_enrichment_test(
     results = pd.merge(results, gene_set_df, on="cytokine")
 
     return results
+
+
+def run_all_enrichment_test(
+    adata: AnnData,
+    df_hcd_all: pd.DataFrame,
+    celltype_combo: tuple[str, str] = ("B cell", "B"),
+    celltype_column: str = "cell_type",
+    contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
+    contrast_column: str = "disease_state",
+    direction: str = "upregulated",
+    
+    # Robustness parameters
+    threshold_lfc: Union[float, List[float]] = 1.0,
+    threshold_expression: Union[float, List[float]] = 0.0,
+    threshold_pval: float = 0.01,
+    
+    # GSEA parameters
+    min_size: int = 10,
+    max_size: int = 1000,
+    permutation_num: int = 1000,
+    weight: float = 1.0,
+    seed: int = 2025,
+    verbose: bool = False,
+    threads: int = 6,
+)-> pd.DataFrame:
+    """Computes cytokine enrichment activity in one celltype using GSEA scoring. Loops through several threshold value to obtain more robust gene sets.
+
+    1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
+    2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
+    3. Computes enrichment of each cytokine by matching their associated gene set in the ranked list.
+
+    Parameters
+    ----------
+    - adata
+        The query adata object.
+    - df_hcd_all
+        Human Cytokine Dictionary
+    - celltype_combo
+        A tuple with the celltype name of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+    - celltype_column
+        Column name of adata.obs object that stores the cell types.
+    - contrasts_combo
+        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
+    - contrast_column
+        Column name of adata.obs object that stores the biological condition of samples.
+    - direction
+        "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
+    - threshold_pval
+        Constructs the gene set: Filters for genes in human df_hcd_all with an adj. p-val lower than threshold_pval.
+    - threshold_lfc
+        Constructs the gene set: Filters for genes in human df_hcd_all that are up/downregulated with a lfc higher than threshold_lfc.
+    - threshold_expression
+        Filters out genes with mean gene expression across all cells lower than threshold_expression.
+
+    Returns
+    -------
+    - results
+        A DataFrame with all computed enrichment scores and statistical parameters. All results from multiple thresholds (ran for robustness).
+    """
+
+    if isinstance(threshold_lfc, float):
+        threshold_lfc = [threshold_lfc]
+    if  isinstance(threshold_expression, float):
+        threshold_expression = [threshold_expression]
+    
+    
+    all_enrichment_results = []
+    for celltype_combo_k, celltype_combo in enumerate(celltype_combo):
+        for lfc in threshold_lfc:       
+            for expr in threshold_expression:
+                
+                results = run_one_enrichment_test(
+                    adata=adata,
+                    df_hcd_all=df_hcd_all,
+                    celltype_combo=celltype_combo,
+                    celltype_column=celltype_column,
+                    contrasts_combo=contrasts,
+                    contrast_column=contrast_column,
+                    direction=direction,
+                
+                    # Robustness parameters
+                    threshold_pval=threshold_pval,
+                    threshold_lfc=lfc,
+                    threshold_expression=expr,
+                
+                    # GSEA parameters
+                    min_size=min_size,
+                    max_size=max_size,
+                    permutation_num=permutation_num,
+                    weight=weight,
+                    seed=seed,
+                    verbose=verbose,
+                    threads=threads
+
+                )
+                
+                all_enrichment_results.append(results)
+    
+    all_enrichment_results = pd.concat(all_enrichment_results, axis=0)
+
+    return all_enrichment_results
