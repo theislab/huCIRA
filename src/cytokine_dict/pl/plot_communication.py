@@ -132,7 +132,7 @@ def get_one_senders_and_receivers(
     adata: AnnData, 
     cytokine_info: pd.DataFrame,
     cytokine: str,
-    column_cell_type: str = "cell_type",
+    celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
@@ -146,7 +146,7 @@ def get_one_senders_and_receivers(
         external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
     - cytokine
         a cytokine, which ideally should be present in robust_results (the outcome of the robust enrichment analysis).
-    - column_cell_type
+    - celltype_colname
         column name of where cell types are stored in adata
     Returns
     ----------
@@ -157,8 +157,8 @@ def get_one_senders_and_receivers(
 
     """
     
-    df_senders = get_senders(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=column_cell_type)
-    df_receivers = get_receivers(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=column_cell_type)
+    df_senders = get_senders(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname)
+    df_receivers = get_receivers(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname)
     if df_senders is not None:
         df_senders = df_senders.loc[(df_senders.pvals < sender_pvalue_threshold) & (df_senders.logfoldchanges > 0)]
     if df_receivers is not None:
@@ -171,7 +171,7 @@ def get_all_senders_and_receivers(
     adata: AnnData, 
     cytokine_info: pd.DataFrame,
     cytokine_list: list = None,
-    column_cell_type: str = "cell_type",
+    celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
@@ -186,7 +186,7 @@ def get_all_senders_and_receivers(
         external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
     - cytokine_list
         list of cytokines, which ideally should be present in robust_results, the outcome of the robust enrichment analysis.
-    - column_cell_type
+    - celltype_colname
         column name of where cell types are stored in adata
     Returns
     ----------
@@ -203,7 +203,7 @@ def get_all_senders_and_receivers(
             adata = adata, 
             cytokine_info = cytokine_info,
             cytokine = cytokine,
-            column_cell_type = "labels",
+            celltype_colname = "labels",
             sender_pvalue_threshold = 0.1,
             receiver_mean_X_threshold = 0,
         )
