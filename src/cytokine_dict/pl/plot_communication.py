@@ -17,6 +17,9 @@ import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 import matplotlib.colorbar as colorbar
 
+import warnings
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
+
 def get_senders(
     adata: AnnData,
     cytokine_info: pd.DataFrame,
@@ -199,7 +202,7 @@ def get_all_senders_and_receivers(
 
     senders, receivers = [], []
     for cytokine in cytokine_list:
-        df_senders, df_receivers = get_senders_and_receivers(
+        df_senders, df_receivers = get_one_senders_and_receivers(
             adata = adata, 
             cytokine_info = cytokine_info,
             cytokine = cytokine,
@@ -287,9 +290,24 @@ def plot_communication(
         all_celltypes = sorted(np.union1d(df_src.celltype.unique(), df_tgt.celltype.unique()))
     # celltype_colors = all_palettes["Set3"][len(all_celltypes)]
     if celltype2color is None:
-        celltype_colors = all_palettes["Category20"][len(all_celltypes)]
-        celltype2color = dict(zip(all_celltypes, celltype_colors))
+        n = len(all_celltypes)
     
+        # Get first 20 colors from Category20
+        palette_20 = all_palettes["Category20"][20]
+        # Get 20 colors from Category20b
+        palette_20b = all_palettes["Category20b"][20]
+    
+        # Combine palettes
+        combined_palette = palette_20 + palette_20b
+    
+        if n > 40:
+            raise ValueError(f"Too many cell types ({n}) for available palettes (max 40).")
+    
+        # Assign colors to cell types
+        celltype_colors = combined_palette[:n]
+        celltype2color = dict(zip(all_celltypes, celltype_colors))
+
+        
     all_cytokines = np.union1d(df_src.cytokine.unique(), df_tgt.cytokine.unique())
     cytokine2idx = {cytokine: k for k, cytokine in enumerate(all_cytokines)}
     # cytokine_colors = all_palettes["Category20"][len(all_cytokines)]
