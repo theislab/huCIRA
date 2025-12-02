@@ -199,7 +199,7 @@ def get_all_senders_and_receivers(
 
     senders, receivers = [], []
     for cytokine in cytokine_list:
-        df_senders, df_receivers = cy.get_senders_and_receivers(
+        df_senders, df_receivers = get_senders_and_receivers(
             adata = adata, 
             cytokine_info = cytokine_info,
             cytokine = cytokine,
