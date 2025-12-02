@@ -6,8 +6,14 @@
 [badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/cytokine_dict/test.yaml?branch=main
 [badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
 
-Human Cytokine Dictionary enables future users to analyze cytokine communication in any transcriptomic dataset.
-All you need to get started is a transcriptome dataset annotated with immune cell types and your experimental condition of interest. Using ths dictionary as reference, you can then "look up" cytokine responses of these states in your dataset.
+The Human Cytokine Dictionary (cytokine_dict, huCIRA, hcd, humancyto, cytokipedia, ...) enables future users to analyze cytokine communication in any transcriptomic dataset.
+All you need to get started is a transcriptome dataset annotated with immune cell types and your experimental condition of interest. Using ths dictionary as reference, you can then "look up" cytokine responses of these states in your dataset, identify up-/downregulated effects in different immune populations, and trace cytoine-mediated inter-immune cell communication.
+
+
+
+[pretty picture here]
+
+
 
 ## Getting started
 
