@@ -382,7 +382,7 @@ def run_all_enrichment_test(
                     df_hcd_all=df_hcd_all,
                     celltype_combo=celltype_combo,
                     celltype_column=celltype_column,
-                    contrasts_combo=contrasts,
+                    contrasts_combo=contrasts_combo,
                     contrast_column=contrast_column,
                     direction=direction,
                 
