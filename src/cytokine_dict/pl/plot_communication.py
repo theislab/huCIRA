@@ -17,13 +17,12 @@ import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 import matplotlib.colorbar as colorbar
 
-
 def get_senders(
     adata: AnnData,
     cytokine_info: pd.DataFrame,
     cytokine: str = "IL-32-beta",
     show: bool = False,
-    column_cell_type: str = "labels",
+    column_cell_type: str = "cell_type",
 ) -> pd.DataFrame:
 
     genes = np.unique(re.split(", ", cytokine_info.loc[cytokine_info.name == cytokine, "gene"].values[0]))
@@ -85,7 +84,7 @@ def get_receivers(
     adata: AnnData, 
     cytokine_info: pd.DataFrame,
     cytokine: str,
-    column_cell_type: str = "labels"
+    column_cell_type: str = "cell_type"
 ) -> pd.DataFrame | None:
 
     # get receptor genes for this cytokine
@@ -129,22 +128,105 @@ def get_receivers(
     return results
 
 
-def get_senders_and_receivers(
+def get_one_senders_and_receivers(
     adata: AnnData, 
     cytokine_info: pd.DataFrame,
     cytokine: str,
-    column_cell_type: str = "labels",
+    column_cell_type: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
+    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine
+     per celltype. Best for exploration purposes of a singular cytokine.
+    Parameters
+    ----------
+    - adata
+        Query adata object of analysis
+    - cytokine_info
+        external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
+    - cytokine
+        a cytokine, which ideally should be present in robust_results (the outcome of the robust enrichment analysis).
+    - column_cell_type
+        column name of where cell types are stored in adata
+    Returns
+    ----------
+    - df_senders
+        cytokine signal senders per cell type
+    - df_receivers
+        cytokine siginal receivers per cell type
 
+    """
+    
     df_senders = get_senders(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=column_cell_type)
     df_receivers = get_receivers(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=column_cell_type)
     if df_senders is not None:
         df_senders = df_senders.loc[(df_senders.pvals < sender_pvalue_threshold) & (df_senders.logfoldchanges > 0)]
     if df_receivers is not None:
         df_receivers = df_receivers.loc[df_receivers.mean_X > receiver_mean_X_threshold]
+
     return df_senders, df_receivers
+
+
+def get_all_senders_and_receivers(
+    adata: AnnData, 
+    cytokine_info: pd.DataFrame,
+    cytokine_list: list = None,
+    column_cell_type: str = "cell_type",
+    sender_pvalue_threshold: float = 0.1,
+    receiver_mean_X_threshold: float = 0,
+) -> (pd.DataFrame, pd.DataFrame):
+    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a cytokine list.
+    Best for visualization purposes (for plot_communication function)
+
+    Parameters
+    ----------
+    - adata
+        Query adata object of analysis
+    - cytokine_info
+        external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
+    - cytokine_list
+        list of cytokines, which ideally should be present in robust_results, the outcome of the robust enrichment analysis.
+    - column_cell_type
+        column name of where cell types are stored in adata
+    Returns
+    ----------
+    - df_src
+        all cytokine signal senders
+    - df_tgt
+        all cytokine siginal receivers
+
+    """
+
+    senders, receivers = [], []
+    for cytokine in cytokine_list:
+        df_senders, df_receivers = cy.get_senders_and_receivers(
+            adata = adata, 
+            cytokine_info = cytokine_info,
+            cytokine = cytokine,
+            column_cell_type = "labels",
+            sender_pvalue_threshold = 0.1,
+            receiver_mean_X_threshold = 0,
+        )
+    
+        if cytokine == "IL-32-beta":
+            # no known receptor genes - create non-informative df_receivers manually.
+            df_receivers = pd.DataFrame.from_dict(
+                dict(zip(all_celltypes, np.ones([len(all_celltypes), 2])*np.inf)), 
+                orient="index",
+            ).rename({0: "mean_X", 1: "frac_X"}, axis=1)
+            df_receivers.loc[:, "cytokine"] = cytokine
+        
+        if df_senders is not None and df_receivers is not None:
+            df_senders.loc[:, "celltype"] = df_senders.index
+            df_receivers.loc[:, "celltype"] = df_receivers.index
+        
+            senders.append(df_senders)
+            receivers.append(df_receivers)
+    
+    df_src = pd.concat(senders)
+    df_tgt = pd.concat(receivers)
+
+    return df_src, df_tgt
 
 
 def plot_communication(
@@ -261,6 +343,7 @@ def plot_communication(
             is_enriched = True # default --> plot if enriched or whenever no enrichment info is provided
             
             if df_enrichment is not None:
+                df_enrichment.loc[:, "celltype"] = df_enrichment.celltype_combo.apply(lambda x: x.split(" (")[0])
                 select = (df_enrichment.celltype == tgt_celltype) & (df_enrichment.cytokine == row.cytokine)
                 is_enriched = df_enrichment.loc[select].shape[0] > 0
             
