@@ -163,7 +163,7 @@ def get_robust_significant_results(
         )
 
     results_robust = pd.concat(results_robust)
-    
+
     # if none of the results in the df pass the filter, exit out and don't return anything.
     if results_robust.empty:
         print("No robust results to process. Exiting function.")
