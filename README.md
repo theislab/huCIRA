@@ -7,6 +7,7 @@
 [badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
 
 Human Cytokine Dictionary enables future users to analyze cytokine communication in any transcriptomic dataset.
+All you need to get started is a transcriptome dataset annotated with immune cell types and your experimental condition of interest. Using ths dictionary as reference, you can then "look up" cytokine responses of these states in your dataset.
 
 ## Getting started
 
