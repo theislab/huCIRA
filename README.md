@@ -6,12 +6,14 @@
 [badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/cytokine_dict/test.yaml?branch=main
 [badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
 
-The Human Cytokine Dictionary (cytokine_dict, huCIRA, hcd, humancyto, cytokipedia, ...) enables future users to analyze cytokine communication in any transcriptomic dataset.
-All you need to get started is a transcriptome dataset annotated with immune cell types and your experimental condition of interest. Using ths dictionary as reference, you can then "look up" cytokine responses of these states in your dataset, identify up-/downregulated effects in different immune populations, and trace cytoine-mediated inter-immune cell communication.
+huCIRA provides an easy-to-use interface to analyze cytokine signaling and cytokine-induced immune program enrichment in transcriptomic datasets.
+
+To get started, simply supply a transcriptomic dataset annotated with immune cell types and the experimental conditions of interest. Using our dictionary as a reference, huCIRA allows you to infer differential cytokine activity and immune program activation across conditions and to map cytokine-mediated interactions between immune cells. Under the hood, huCIRA is based on [gseapy](https://github.com/zqfang/GSEApy/tree/master/gseapy) to run enrichment analyses.
 
 
 
-[pretty picture here]
+<img src="docs/_static/images/hucira_overview.svg" width="500" alt="huCIRA">
+
 
 
 
@@ -47,7 +49,6 @@ See the [changelog][].
 
 ## Contact
 
-For questions and help requests, you can reach out in the [scverse discourse][].
 If you found a bug, please use the [issue tracker][].
 
 ## Citation
