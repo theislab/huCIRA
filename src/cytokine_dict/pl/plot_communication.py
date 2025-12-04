@@ -73,9 +73,9 @@ def get_senders(
     obs.loc[:, "is_expressed"] = obs.X > 0
     obs.set_index(column_cell_type, inplace=True)
 
-    a = obs.groupby("labels", observed=True).is_expressed.mean().to_frame().rename({"is_expressed": "frac_X"}, axis=1)
-    b = obs.groupby("labels", observed=True).X.mean().to_frame().rename({"X": "mean_X"}, axis=1)
-    c = obs.loc[obs.X > 0].groupby("labels", observed=True).X.mean().to_frame().rename({"X": "mean_X>0"}, axis=1)
+    a = obs.groupby(celltype_colname, observed=True).is_expressed.mean().to_frame().rename({"is_expressed": "frac_X"}, axis=1)
+    b = obs.groupby(column_cell_type, observed=True).X.mean().to_frame().rename({"X": "mean_X"}, axis=1)
+    c = obs.loc[obs.X > 0].groupby(column_cell_type, observed=True).X.mean().to_frame().rename({"X": "mean_X>0"}, axis=1)
 
     all_df = pd.concat([all_df, a, b, c], axis=1)
     all_df.loc[:, "mean_X>0"] = all_df.loc[:, "mean_X>0"].fillna(0)
@@ -206,7 +206,7 @@ def get_all_senders_and_receivers(
             adata = adata, 
             cytokine_info = cytokine_info,
             cytokine = cytokine,
-            celltype_colname = "labels",
+            celltype_colname = celltype_colname,
             sender_pvalue_threshold = 0.1,
             receiver_mean_X_threshold = 0,
         )
