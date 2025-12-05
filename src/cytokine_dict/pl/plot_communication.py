@@ -151,7 +151,6 @@ def get_one_senders_and_receivers(
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
-    
     """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine
      per celltype. Best for exploration purposes of a singular cytokine.
 
@@ -199,7 +198,6 @@ def get_all_senders_and_receivers(
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
-
     """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a cytokine list.
     Best for visualization purposes (for plot_communication function)
 
@@ -275,7 +273,6 @@ def plot_communication(
     loc: str = "upper left",
     bbox_to_anchor: tuple[float, float] = (1, 1),
 ):
-    
     """
     Generates a Circos plot to visualize cell-cell communication based on cytokine
     producer and receiver statistics.
