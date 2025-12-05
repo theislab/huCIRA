@@ -33,4 +33,4 @@ __all__ = [
 ]
 
 
-__version__ = version("cytokine_dict")
+__version__ = version("hucira")
