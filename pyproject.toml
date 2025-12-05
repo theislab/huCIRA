@@ -38,7 +38,8 @@ dependencies = [
   "seaborn>=0.13.2",
   #"matplotlib-base>=3.10.1",
   "pycirclize",
-  "bokeh"
+  "bokeh",
+  "openpyxl"
 ]
 optional-dependencies.dev = [
   "pre-commit",
