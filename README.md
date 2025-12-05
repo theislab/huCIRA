@@ -40,7 +40,7 @@ pip install cytokine_dict
 1. Install the latest development version:
 
 ```bash
-pip install git+https://github.com/theislab/cytokine_dict.git@main
+pip install git+https://github.com/theislab/huCIRA.git@main
 ```
 
 ## Release notes
