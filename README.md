@@ -42,7 +42,7 @@ enrichment_results = hc.run_one_enrichment_test(
     threshold_expression = 0.0
 )
 
-# 3. Investigate enrichment scores of cytokines:
+# 3. Investigate enrichment scores of cytokines in your data
 enrichment_results
 
 
