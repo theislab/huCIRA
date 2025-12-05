@@ -19,7 +19,9 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 ## Getting started
 
-Please refer to the [tutorials][https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb]
+Please refer to the [tutorials](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb).
+
+
 
 ## Installation
 
