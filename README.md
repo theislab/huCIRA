@@ -1,4 +1,4 @@
-# cytokine_dict
+# huCIRA
 
 [![Tests][badge-tests]][tests]
 [![Documentation][badge-docs]][documentation]
