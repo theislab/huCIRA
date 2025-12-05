@@ -1,4 +1,4 @@
-from typing import Literal, Union, List
+from typing import Literal
 
 import gseapy as gp
 import numpy as np
@@ -144,11 +144,6 @@ def _compute_ranking_statistic(
     return pd.concat(rnk_stats, axis=1), pd.concat(num_cells, axis=0)
 
 
-
-    threshold_lfc: float = 1.0,
-    threshold_expression: float = 0.0,
-
-    
 def run_one_enrichment_test(
     adata: AnnData,
     df_hcd_all: pd.DataFrame,
@@ -157,12 +152,10 @@ def run_one_enrichment_test(
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
     contrast_column: str = "disease_state",
     direction: str = "upregulated",
-    
     # Robustness parameters
-    threshold_lfc: Union[float, List[float]] = 1.0,
-    threshold_expression: Union[float, List[float]] = 0.0,
+    threshold_lfc: float | list[float] = 1.0,
+    threshold_expression: float | list[float] = 0.0,
     threshold_pval: float = 0.01,
-    
     # GSEA parameters
     min_size: int = 10,
     max_size: int = 1000,
@@ -171,9 +164,8 @@ def run_one_enrichment_test(
     seed: int = 2025,
     verbose: bool = False,
     threads: int = 6,
-
 ) -> pd.DataFrame:
-    """Computes cytokine enrichment activity in one celltype using GSEA scoring. 
+    """Computes cytokine enrichment activity in one celltype using GSEA scoring.
 
     1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
     2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
@@ -311,17 +303,15 @@ def run_one_enrichment_test(
 def run_all_enrichment_test(
     adata: AnnData,
     df_hcd_all: pd.DataFrame,
-    celltype_combo: tuple[str, str] = ("B cell", "B"),
+    celltype_combos: tuple[str, str] = ("B cell", "B"),
     celltype_column: str = "cell_type",
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
     contrast_column: str = "disease_state",
     direction: str = "upregulated",
-    
     # Robustness parameters
-    threshold_lfc: Union[float, List[float]] = 1.0,
-    threshold_expression: Union[float, List[float]] = 0.0,
+    threshold_lfc: float | list[float] = 1.0,
+    threshold_expression: float | list[float] = 0.0,
     threshold_pval: float = 0.01,
-    
     # GSEA parameters
     min_size: int = 10,
     max_size: int = 1000,
@@ -330,7 +320,7 @@ def run_all_enrichment_test(
     seed: int = 2025,
     verbose: bool = False,
     threads: int = 6,
-)-> pd.DataFrame:
+) -> pd.DataFrame:
     """Computes cytokine enrichment activity in one celltype using GSEA scoring. Loops through several threshold value to obtain more robust gene sets.
 
     1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
@@ -343,8 +333,8 @@ def run_all_enrichment_test(
         The query adata object.
     - df_hcd_all
         Human Cytokine Dictionary
-    - celltype_combo
-        A tuple with the celltype name of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+    - celltype_combos
+        A tuple with the celltype names of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
     - celltype_column
         Column name of adata.obs object that stores the cell types.
     - contrasts_combo
@@ -365,18 +355,15 @@ def run_all_enrichment_test(
     - results
         A DataFrame with all computed enrichment scores and statistical parameters. All results from multiple thresholds (ran for robustness).
     """
-
     if isinstance(threshold_lfc, float):
         threshold_lfc = [threshold_lfc]
-    if  isinstance(threshold_expression, float):
+    if isinstance(threshold_expression, float):
         threshold_expression = [threshold_expression]
-    
-    
+
     all_enrichment_results = []
-    for celltype_combo_k, celltype_combo in enumerate(celltype_combo):
-        for lfc in threshold_lfc:       
+    for _celltype_combo_k, celltype_combo in enumerate(celltype_combos):
+        for lfc in threshold_lfc:
             for expr in threshold_expression:
-                
                 results = run_one_enrichment_test(
                     adata=adata,
                     df_hcd_all=df_hcd_all,
@@ -385,12 +372,10 @@ def run_all_enrichment_test(
                     contrasts_combo=contrasts_combo,
                     contrast_column=contrast_column,
                     direction=direction,
-                
                     # Robustness parameters
                     threshold_pval=threshold_pval,
                     threshold_lfc=lfc,
                     threshold_expression=expr,
-                
                     # GSEA parameters
                     min_size=min_size,
                     max_size=max_size,
@@ -398,12 +383,11 @@ def run_all_enrichment_test(
                     weight=weight,
                     seed=seed,
                     verbose=verbose,
-                    threads=threads
-
+                    threads=threads,
                 )
-                
+
                 all_enrichment_results.append(results)
-    
+
     all_enrichment_results = pd.concat(all_enrichment_results, axis=0)
 
     return all_enrichment_results
