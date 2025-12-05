@@ -27,7 +27,7 @@ in particular, the [API documentation][].
 You need to have 3.11 <= Python < 3.14 installed on your system. 
 If you don't have Python installed, we recommend installing [uv][].
 
-There are several alternative options to install cytokine_dict:
+There are several alternative options to install hucira:
 
 <!--
 1) Install the latest release of `cytokine_dict` from [PyPI][]:
