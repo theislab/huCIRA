@@ -19,7 +19,35 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 ## Getting started
 
-Please refer to the [tutorials](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb).
+Please refer to the [tutorials](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline.
+
+The core analysis is happening here: 
+```python
+import scanpy as sc
+import hucira as hc
+
+# 1. Load your data
+adata = sc.read_h5ad("your_transcriptome.h5ad")
+human_cytokine_dictionary = hc.load_cytokine_dict_data()
+
+# 2. Run cytokine enrichment analysis for B cells between healthy and diseased patients
+enrichment_results = hc.run_one_enrichment_test(
+    adata = adata,
+    df_hcd_all = human_cytokine_dictionary,
+    contrasts_combo = ("healthy", "disease"),
+    celltype_combo = ("B cell", "B"),
+    contrast_column = "condition",
+    celltype_column = "cell_type",
+    direction = "upregulated",
+    threshold_expression = 0.0
+)
+
+# 3. Investigate enrichment scores of cytokines:
+enrichment_results
+
+
+
+```
 
 
 
