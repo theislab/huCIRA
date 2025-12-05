@@ -39,7 +39,8 @@ def get_senders(
         genes = genes[mask]
 
     adata = adata[:, genes]
-    
+
+    # Ranks genes of sender cytokine.
     adata_out = sc.tl.rank_genes_groups(
         adata,
         groupby=column_cell_type,
@@ -50,7 +51,8 @@ def get_senders(
     result = adata_out.uns['rank_genes_groups']
     groups = result['names'].dtype.names
     
-    all_df = []
+    results_mean, results_frac = [], []
+    rank_genes_df = []
     for g in groups:
         df = pd.DataFrame({
             'gene': result['names'][g],
@@ -59,28 +61,46 @@ def get_senders(
             'pvals_adj': result['pvals_adj'][g],
             column_cell_type: g,
         })
-        all_df.append(df)
-    all_df = pd.concat(all_df, axis=0)
-    all_df.set_index(column_cell_type, inplace=True)
+        rank_genes_df.append(df)
+    rank_genes_df = pd.concat(rank_genes_df, axis=0)
+    rank_genes_df.set_index(column_cell_type, inplace=True)
 
-    obs = adata_out.obs.copy()
-    assert all(obs.index == adata.obs.index)
-    if not isinstance(adata.X, np.ndarray):
-        obs.loc[:, "X"] = np.array(adata.X.todense()).squeeze()
-    else:
-        obs.loc[:, "X"] = adata.X.squeeze()
+    grouped = rank_genes_df.groupby(column_cell_type)
+    grouped_rank_genes_df_all = []
+
+    # Chooses minimum rank_genes_group() statistical parameters of each sender gene.
+    for celltype in grouped.groups.keys():
+        
+        grouped_celltype_df = grouped.get_group(celltype)  
+        mean_vals = grouped_celltype_df.select_dtypes("number").min()
+        gene_concat = ", ".join(grouped_celltype_df["gene"]) 
+        grouped_rank_genes_df = mean_vals.to_frame().T
+        grouped_rank_genes_df["gene"] = gene_concat
+        grouped_rank_genes_df.index = [celltype]
+        grouped_rank_genes_df_all.append(grouped_rank_genes_df)
     
-    obs.loc[:, "is_expressed"] = obs.X > 0
-    obs.set_index(column_cell_type, inplace=True)
-
-    a = obs.groupby(celltype_colname, observed=True).is_expressed.mean().to_frame().rename({"is_expressed": "frac_X"}, axis=1)
-    b = obs.groupby(column_cell_type, observed=True).X.mean().to_frame().rename({"X": "mean_X"}, axis=1)
-    c = obs.loc[obs.X > 0].groupby(column_cell_type, observed=True).X.mean().to_frame().rename({"X": "mean_X>0"}, axis=1)
-
-    all_df = pd.concat([all_df, a, b, c], axis=1)
-    all_df.loc[:, "mean_X>0"] = all_df.loc[:, "mean_X>0"].fillna(0)
-    all_df.loc[:, "cytokine"] = cytokine
-    return all_df
+    grouped_rank_genes_df_all = pd.concat(grouped_rank_genes_df_all, axis=0)
+    grouped_rank_genes_df_all = grouped_rank_genes_df_all.rename(columns={"logfoldchanges": "min_logfoldchanges",
+                                                              "pvals": "min_pvals",
+                                                              "pvals_adj": "min_pvals_adj"})
+    grouped_rank_genes_df_all
+    
+    # Minimum of mean gene expression of sender cytokine genes:
+    X_df = adata[:, genes].to_df()
+    frac_df = X_df > 0
+    X_df.loc[:, column_cell_type] = adata.obs.loc[:, column_cell_type].values
+    frac_df.loc[:, column_cell_type] = adata.obs.loc[:, column_cell_type].values
+    
+    # take minimum average gene expression across all genes required for this sender
+    results_mean = X_df.groupby(column_cell_type, observed=False).mean().min(axis=1).to_frame().rename({0: "mean_X"}, axis=1)
+    # take minimum expression fraction across all genes required for this sender
+    results_frac = frac_df.groupby(column_cell_type, observed=False).mean().min(axis=1).to_frame().rename({0: "frac_X"}, axis=1)
+    
+    # Final df with informationa about active sender cytokines.
+    results = pd.concat([grouped_rank_genes_df_all, results_mean, results_frac], axis=1)
+    results["mean_X>0"] = results["mean_X"].where(results["mean_X"] > 0, None)
+    results.loc[:, "cytokine"] = cytokine
+    return results
 
 
 def get_receivers(
@@ -97,13 +117,12 @@ def get_receivers(
         return None
     assert len(_receptor_genes) == 1, _receptor_genes
     _receptor_genes = _receptor_genes.values[0]
-
     # there can be multiple receptors
     candidates = re.split("; ", _receptor_genes)
-    
     results_mean, results_frac = [], []
     # each receptor may require the expression of multiple genes
     for candidate in candidates:
+        # print(candidate)
         genes = np.array(re.split(", ", candidate))
         mask = np.isin(genes, adata.var_names)
         if not mask.any():
@@ -163,7 +182,7 @@ def get_one_senders_and_receivers(
     df_senders = get_senders(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname)
     df_receivers = get_receivers(adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname)
     if df_senders is not None:
-        df_senders = df_senders.loc[(df_senders.pvals < sender_pvalue_threshold) & (df_senders.logfoldchanges > 0)]
+        df_senders = df_senders.loc[(df_senders.min_pvals < sender_pvalue_threshold) & (df_senders.min_logfoldchanges > 0)]
     if df_receivers is not None:
         df_receivers = df_receivers.loc[df_receivers.mean_X > receiver_mean_X_threshold]
 
@@ -248,6 +267,8 @@ def plot_communication(
     save_path: str | None = None,
     lw: float = 1.0,
     fontsize: int = 6,
+    loc: str = "upper left",
+    bbox_to_anchor: Tuple[float, float] = (1,1)
 ):
     """
     Generates a Circos plot to visualize cell-cell communication based on cytokine
@@ -401,8 +422,8 @@ def plot_communication(
             handles=legend_handles, 
             labels=legend_labels,
             title='Cytokines',
-            loc='upper left',
-            bbox_to_anchor=(1, 1),
+            loc=loc,
+            bbox_to_anchor=bbox_to_anchor,
             prop={'family': 'sans-serif', 'size': 6},
             title_fontsize=6,
         )
