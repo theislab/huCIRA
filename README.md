@@ -19,7 +19,7 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 ## Getting started
 
-Please refer to the [tutorials](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline.
+Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline.
 
 The core analysis is happening here: 
 ```python
