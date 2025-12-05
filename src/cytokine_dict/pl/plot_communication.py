@@ -239,8 +239,8 @@ def get_all_senders_and_receivers(
             df_receivers.loc[:, "cytokine"] = cytokine
         
         if df_senders is not None and df_receivers is not None:
-            df_senders.loc[:, "celltype"] = df_senders.index
-            df_receivers.loc[:, "celltype"] = df_receivers.index
+            df_senders = df_senders.assign(celltype=df_senders.index)
+            df_receivers = df_receivers.assign(celltype=df_receivers.index)
         
             senders.append(df_senders)
             receivers.append(df_receivers)
