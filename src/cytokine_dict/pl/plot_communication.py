@@ -151,29 +151,30 @@ def get_one_senders_and_receivers(
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
-    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine
-     per celltype. Best for exploration purposes of a singular cytokine.
+    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine.
+
+    Best for exploration purposes of a singular cytokine.
 
     Parameters
     ----------
-    - adata
+    adata : AnnData
         Query adata object of analysis
-    - cytokine_info
-        external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
-    - cytokine
-        a cytokine, which ideally should be present in robust_results (the outcome of the robust enrichment analysis).
-    - celltype_colname
-        column name of where cell types are stored in adata
+    cytokine_info : pd.DataFrame
+        External file containing info about receptor genes of each cytokine in format
+        pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
+    cytokine : str
+        A cytokine, which ideally should be present in robust_results
+        (the outcome of the robust enrichment analysis)
+    celltype_colname : str, default "cell_type"
+        Column name of where cell types are stored in adata
 
     Returns
     -------
-    - df_senders
-        cytokine signal senders per cell type
-    - df_receivers
-        cytokine siginal receivers per cell type
-
+    df_senders : pd.DataFrame
+        Cytokine signal senders per cell type
+    df_receivers : pd.DataFrame
+        Cytokine signal receivers per cell type
     """
-
     df_senders = _get_senders(
         adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname
     )
@@ -198,29 +199,30 @@ def get_all_senders_and_receivers(
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> (pd.DataFrame, pd.DataFrame):
-    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a cytokine list.
-    Best for visualization purposes (for plot_communication function)
+    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a list of cytokines.
+
+    Best for visualization purposes (for plot_communication function).
 
     Parameters
     ----------
-    - adata
+    adata : AnnData
         Query adata object of analysis
-    - cytokine_info
-        external file containing info about receptor genes of each cytokine in format pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
-    - cytokine_list
-        list of cytokines, which ideally should be present in robust_results, the outcome of the robust enrichment analysis.
-    - celltype_colname
-        column name of where cell types are stored in adata
+    cytokine_info : pd.DataFrame
+        External file containing info about receptor genes of each cytokine in format
+        pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
+    cytokine_list : list, optional
+        List of cytokines, which ideally should be present in robust_results
+        (the outcome of the robust enrichment analysis). Default is None.
+    celltype_colname : str, default "cell_type"
+        Column name of where cell types are stored in adata
 
     Returns
     -------
-    - df_src
-        all cytokine signal senders
-    - df_tgt
-        all cytokine siginal receivers
-
+    df_src : pd.DataFrame
+        All cytokine signal senders
+    df_tgt : pd.DataFrame
+        All cytokine signal receivers
     """
-
     senders, receivers = [], []
     for cytokine in cytokine_list:
         df_senders, df_receivers = get_one_senders_and_receivers(
@@ -273,14 +275,11 @@ def plot_communication(
     loc: str = "upper left",
     bbox_to_anchor: tuple[float, float] = (1, 1),
 ):
-    """
-    Generates a Circos plot to visualize cell-cell communication based on cytokine
-    producer and receiver statistics.
+    """Generates a Circos plot to visualize cell-cell communication based on cytokine producers and receivers.
 
-    Filters the input dataframes based on provided thresholds for fraction of
-    expressing cells and mean cytokine gene expression. It then creates a
-    circular layout with cell type partitions and draws directed links
-    representing cytokine communication between producer and receiver cell types.
+    The function filters the input dataframes based on thresholds for fraction of expressing cells
+    and mean cytokine gene expression, then creates a circular layout with cell type partitions
+    and draws directed links representing cytokine communication between producers and receivers.
 
     Parameters
     ----------
@@ -292,15 +291,40 @@ def plot_communication(
         DataFrame containing receiver cell type and cytokine expression statistics,
         typically from `_get_expression_stats`. Must have 'celltype', 'cytokine',
         'mean_cytokine_gene_expression', and 'frac_expressing_cells' columns.
-    frac_expressing_cells : float | None, default 0.05
-        Minimum fraction of cells expressing a cytokine/receptor gene for an
-        interaction to be considered. If None, no filtering is applied based on this.
-    mean_cytokine_gene_expression : float | None, default None
-        Minimum mean expression of a cytokine/receptor gene for an interaction
-        to be considered. If None, no filtering is applied based on this.
+    frac_expressing_cells_sender : float | None, default 0.05
+        Minimum fraction of cells expressing a cytokine gene for a producer cell type.
+        If None, no filtering is applied.
+    frac_expressing_cells_receiver : float | None, default 0.05
+        Minimum fraction of cells expressing a cytokine gene for a receiver cell type.
+        If None, no filtering is applied.
+    mean_cytokine_gene_expression_sender : float | None, default None
+        Minimum mean expression of a cytokine gene for a producer cell type. If None, no filtering is applied.
+    mean_cytokine_gene_expression_receiver : float | None, default None
+        Minimum mean expression of a cytokine gene for a receiver cell type. If None, no filtering is applied.
+    df_enrichment : pd.DataFrame | None, optional
+        Optional dataframe with enrichment information. Default is None.
+    all_celltypes : list | None, optional
+        List of all cell types. If None, inferred from df_src and df_tgt.
+    cytokine2color : dict | None, optional
+        Optional mapping from cytokine names to colors.
+    celltype2color : dict | None, optional
+        Optional mapping from cell type names to colors.
+    figsize : tuple[float, float], default (5, 5)
+        Figure size for the plot.
+    show_legend : bool, default True
+        Whether to show the legend.
+    save_path : str | None, optional
+        Path to save the figure. If None, figure is not saved.
+    lw : float, default 1.0
+        Line width for links.
+    fontsize : int, default 6
+        Font size for labels.
+    loc : str, default "upper left"
+        Legend location.
+    bbox_to_anchor : tuple[float, float], default (1, 1)
+        Bounding box anchor for the legend.
 
     """
-
     if frac_expressing_cells_sender is not None:
         df_src = df_src.loc[df_src.frac_X > frac_expressing_cells_sender]
     if frac_expressing_cells_receiver is not None:

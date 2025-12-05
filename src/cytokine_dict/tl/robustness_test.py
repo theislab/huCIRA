@@ -2,8 +2,9 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from tqdm.auto import tqdm
 from IPython.display import display
+from tqdm.auto import tqdm
+
 
 def _check_robustness_fractions(
     df_pivot,
@@ -118,11 +119,7 @@ def check_robustness(
 
 
 def get_robust_significant_results(
-    results,
-    alphas=None,
-    threshold_valid=0.1,
-    threshold_below_alpha=0.9,
-    display_df_nicely=True
+    results, alphas=None, threshold_valid=0.1, threshold_below_alpha=0.9, display_df_nicely=True
 ):
     """Filters for robust and signifcant results from original enrichments (run_enrichment_test() output)
 
@@ -167,46 +164,40 @@ def get_robust_significant_results(
     # if none of the results in the df pass the filter, exit out and don't return anything.
     if results_robust.empty:
         print("No robust results to process. Exiting function.")
-        return 
-        
+        return
+
     results_robust = (
         results_robust.groupby(["contrast", "celltype_combo", "cytokine"])["qval_threshold"]
         .min()
         .to_frame()
         .reset_index()
     )
-    
+
     results_mean = (
-        results.assign(NES=pd.to_numeric(results.NES, errors='coerce'))  # ensure numeric
-               .fillna({'NES': 0})  # only fill NES
-               .groupby(["contrast", "celltype_combo", "cytokine"])["NES"]
-               .mean()
-               .to_frame()
-               .reset_index()
+        results.assign(NES=pd.to_numeric(results.NES, errors="coerce"))  # ensure numeric
+        .fillna({"NES": 0})  # only fill NES
+        .groupby(["contrast", "celltype_combo", "cytokine"])["NES"]
+        .mean()
+        .to_frame()
+        .reset_index()
     )
 
     # Create separate robust results dict for every contrast pair.
     robust_results_dict = {}
     for contrast in results.contrast.unique():
         subset = results_mean[results_mean.contrast == contrast]
-        pivot_df = subset.pivot(
-            index="cytokine",
-            columns="celltype_combo",
-            values="NES"
-        )
-    
+        pivot_df = subset.pivot(index="cytokine", columns="celltype_combo", values="NES")
+
         # create empty annotation df
-        annot_df = pivot_df.copy().astype(object)  
+        annot_df = pivot_df.copy().astype(object)
         annot_df[:] = ""
-    
+
         # fill annotations based on results_robust
         robust_sub = results_robust[results_robust.contrast == contrast]
         for cytokine in annot_df.index:
             for celltype in annot_df.columns:
                 qval = robust_sub.loc[
-                    (robust_sub.cytokine == cytokine) &
-                    (robust_sub.celltype_combo == celltype),
-                    "qval_threshold"
+                    (robust_sub.cytokine == cytokine) & (robust_sub.celltype_combo == celltype), "qval_threshold"
                 ]
                 if len(qval) != 0:
                     qval = qval.values[0]
@@ -216,7 +207,7 @@ def get_robust_significant_results(
                         annot_df.loc[cytokine, celltype] = "**"
                     elif qval == 0.01:
                         annot_df.loc[cytokine, celltype] = "***"
-    
+
         robust_results_dict[contrast] = [pivot_df, annot_df, robust_sub]
 
     if display_df_nicely:
