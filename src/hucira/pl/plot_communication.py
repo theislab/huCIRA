@@ -65,9 +65,9 @@ def _get_senders(
     # Chooses minimum rank_genes_group() statistical parameters of each sender gene.
     for celltype in grouped.groups.keys():
         grouped_celltype_df = grouped.get_group(celltype)
-        mean_vals = grouped_celltype_df.select_dtypes("number").min()
+        aggregated_vals = grouped_celltype_df.select_dtypes("number").min()
         gene_concat = ", ".join(grouped_celltype_df["gene"])
-        grouped_rank_genes_df = mean_vals.to_frame().T
+        grouped_rank_genes_df = aggregated_vals.to_frame().T
         grouped_rank_genes_df["gene"] = gene_concat
         grouped_rank_genes_df.index = [celltype]
         grouped_rank_genes_df_all.append(grouped_rank_genes_df)
