@@ -20,26 +20,27 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   # "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   "anndata",
-  # for debug logging (referenced from the issue template)
-  "session-info2",
   "anndata>=0.11.4",
-  "scanpy>=1.11.1",
-  "numpy>=2.1.0",
-  "pandas>=2.2.3",
-  "scipy>=1.15.2",
-  "scikit-learn>=1.5.2",
-
+  "bokeh",
   "gseapy>=1.1.8",
-  "tqdm>=4.67.1",
-  "seaborn>=0.13.2",
+  "numpy>=2.1",
+  "openpyxl",
+  "pandas>=2.2.3",
   #"matplotlib-base>=3.10.1",
   "pycirclize",
-  "bokeh",
-  "openpyxl"
+  "scanpy>=1.11.1",
+  "scikit-learn>=1.5.2",
+
+  "scipy>=1.15.2",
+  "seaborn>=0.13.2",
+  # for debug logging (referenced from the issue template)
+  "session-info2",
+  "tqdm>=4.67.1",
 ]
 optional-dependencies.dev = [
   "pre-commit",
@@ -61,12 +62,11 @@ optional-dependencies.doc = [
   "sphinxcontrib-bibtex>=1",
   "sphinxcontrib-katex",
   "sphinxext-opengraph",
-  "IPython"
 ]
 optional-dependencies.test = [
   "coverage>=7.10",
+  "ipython",
   "pytest",
-  "IPython"
 ]
 # https://docs.pypi.org/project_metadata/#project-urls
 urls.Documentation = "https://huCIRA.readthedocs.io/"
@@ -86,7 +86,7 @@ scripts.clean = "git clean -fdX -- {args:docs}"
 # Test the lowest and highest supported Python versions with normal deps
 [[tool.hatch.envs.hatch-test.matrix]]
 deps = [ "stable" ]
-python = [ "3.11"] # removed 3.14, numba isn't supported yet.
+python = [ "3.11" ] # removed 3.14, numba isn't supported yet.
 
 ## Test the newest supported Python version also with pre-release deps
 # [[tool.hatch.envs.hatch-test.matrix]]

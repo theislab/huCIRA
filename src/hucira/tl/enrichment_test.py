@@ -3,8 +3,6 @@ from typing import Literal
 import gseapy as gp
 import numpy as np
 import pandas as pd
-
-# import scanpy as sc
 from anndata import AnnData
 
 
@@ -59,7 +57,7 @@ def _compute_mu_and_sigma(adata: AnnData, contrast_column: str, condition: str) 
 
 def _compute_s2n(
     adata: AnnData, contrast_column: str, condition_1: str, condition_2: str, precomputed_stats: dict | None = None
-) -> (pd.DataFrame, pd.DataFrame):
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Compute the signal-to-noise ratio (S2N) for each gene between two conditions in an AnnData object.
 
@@ -117,7 +115,7 @@ def _compute_s2n(
 
 def _compute_ranking_statistic(
     adata: AnnData, contrast_column: str, contrasts_combo: list[tuple[str, str]]
-) -> (pd.DataFrame, pd.DataFrame):
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     rnk_stats, num_cells = [], []
     precomputed_stats = {}
 

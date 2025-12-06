@@ -1,6 +1,5 @@
-import pytest
-
 import cytokine_dict
+import pytest
 
 
 def test_package_has_version():
