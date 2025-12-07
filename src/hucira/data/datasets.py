@@ -33,7 +33,7 @@ def load_MS_CSF_data(save_dir="",
     """
     
     url = "https://figshare.com/ndownloader/files/27405182"
-    if save_dir = "":
+    if save_dir == "":
         save_dir = os.getcwd()
 
     local_path = os.path.join(save_dir, "MS_CSF.h5ad")
@@ -76,7 +76,7 @@ def load_Lupus_data(save_dir="",
     
     url = "https://datasets.cellxgene.cziscience.com/4118e166-34f5-4c1f-9eed-c64b90a3dace.h5ad"
     
-    if save_dir = "":
+    if save_dir == "":
         save_dir = os.getcwd()
     local_path = os.path.join(save_dir, "lupus.h5ad")
 
