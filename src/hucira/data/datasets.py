@@ -1,8 +1,11 @@
 import pandas as pd
 import scanpy as sc
+import os
+import requests
 
 
-def load_cytokine_dict_data():
+
+def load_human_cytokine_dict():
     """To be changed: Currently referring to local path."""
     cytokine_dict = pd.read_csv(
         "/home/icb/jenni.liu/projects/cytokine_dict_folder/DEGs_all_with_pbs_DE_count.csv", index_col=0
@@ -10,10 +13,87 @@ def load_cytokine_dict_data():
     return cytokine_dict
 
 
-def load_MS_data():
-    """To be changed: Currently referring to local path."""
-    adata = sc.read_h5ad("/home/icb/jenni.liu/projects/cytokine_dict_folder/Schafflick20_MS_CSF.h5ad")
-    return adata
+def load_MS_CSF_data(save_dir="",
+                     force_download=False):
+    """
+    Download and load the MS dataset from automatically.
+    Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset. https://doi.org/10.6084/m9.figshare.14356661.v1
+    
+    Parameters
+    ----------
+    save_dir : str
+        Directory where the file will be saved.
+    force_download : bool
+        Allows user to force a fresh download from CellxGene
+
+    Returns
+    -------
+    adata : AnnData
+        Lupus adata object.
+    """
+    
+    url = "https://figshare.com/ndownloader/files/27405182"
+    save_dir = os.path.expanduser(save_dir)
+    os.makedirs(save_dir, exist_ok=True)
+
+    local_path = os.path.join(save_dir, "MS_CSF.h5ad")
+
+    # Download only if not already in cache
+    if force_download or not os.path.exists(local_path):
+        print("Downloading lupus dataset from CELLxGENE...")
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        print(f"Download complete: {local_path}")
+    else:
+        print(f"Using cached file: {local_path}")
+
+    # Load with scanpy
+    return sc.read_h5ad(local_path)
+
+
+
+def load_Lupus_data(save_dir="",
+                    force_download=False):
+    """
+    Download and load the lupus dataset from CELLxGENE automatically.
+    Richard K. Perez et al. ,Single-cell RNA-seq reveals cell type–specific molecular and genetic associations to lupus.Science376,eabf1970(2022).DOI:10.1126/science.abf1970
+
+    Parameters
+    ----------
+    save_dir : str
+        Directory where the file will be saved.
+    force_download : bool
+        Allows user to force a fresh download from CellxGene
+
+    Returns
+    -------
+    adata : AnnData
+        Lupus adata object.
+    """
+    
+    url = "https://datasets.cellxgene.cziscience.com/4118e166-34f5-4c1f-9eed-c64b90a3dace.h5ad"
+    save_dir = os.path.expanduser(save_dir)
+    os.makedirs(save_dir, exist_ok=True)
+
+    local_path = os.path.join(save_dir, "lupus.h5ad")
+
+    # Download only if not already in cache
+    if force_download or not os.path.exists(local_path):
+        print("Downloading lupus dataset from CELLxGENE...")
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        print(f"Download complete: {local_path}")
+    else:
+        print(f"Using cached file: {local_path}")
+
+    # Load with scanpy
+    return sc.read_h5ad(local_path)
 
 
 def load_cytokine_info():
