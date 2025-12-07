@@ -21,7 +21,7 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline.
 
-The core analysis is happening here: 
+The core analysis is happening here:
 ```python
 import scanpy as sc
 import hucira as hc
@@ -53,7 +53,7 @@ enrichment_results
 
 ## Installation
 
-You need to have 3.11 <= Python < 3.14 installed on your system. 
+You need to have 3.11 <= Python < 3.14 installed on your system.
 If you don't have Python installed, we recommend installing [uv][].
 
 There are several alternative options to install hucira:
