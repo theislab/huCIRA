@@ -29,7 +29,7 @@ def load_MS_CSF_data(save_dir="",
     Returns
     -------
     adata : AnnData
-        Lupus adata object.
+        MS adata object.
     """
     
     url = "https://figshare.com/ndownloader/files/27405182"
@@ -38,9 +38,9 @@ def load_MS_CSF_data(save_dir="",
 
     local_path = os.path.join(save_dir, "MS_CSF.h5ad")
 
-    # Download only if not already in cache
+    # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
-        print("Downloading lupus dataset from CELLxGENE...")
+        print("Downloading MS dataset from figshare...")
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
             with open(local_path, "wb") as f:
@@ -80,7 +80,7 @@ def load_Lupus_data(save_dir="",
         save_dir = os.getcwd()
     local_path = os.path.join(save_dir, "lupus.h5ad")
 
-    # Download only if not already in cache
+    # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
         print("Downloading lupus dataset from CELLxGENE...")
         with requests.get(url, stream=True) as r:
