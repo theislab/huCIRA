@@ -2,7 +2,7 @@ from importlib.metadata import version
 
 # from . import pl, tl
 # __all__ = ["pl", "tl"]
-from .data import load_cytokine_dict_data, load_cytokine_info, load_MS_data
+from .data import load_human_cytokine_dict, load_MS_CSF_data, load_Lupus_data, load_cytokine_info
 from .pl import (
     get_all_senders_and_receivers,
     get_one_senders_and_receivers,
