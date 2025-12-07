@@ -28,7 +28,7 @@ import hucira as hc
 
 # 1. Load your data
 adata = sc.read_h5ad("your_transcriptome.h5ad")
-human_cytokine_dictionary = hc.load_cytokine_dict_data()
+human_cytokine_dictionary = hc.load_human_cytokine_dict()
 
 # 2. Run cytokine enrichment analysis for B cells between healthy and diseased patients
 enrichment_results = hc.run_one_enrichment_test(
