@@ -1,3 +1,3 @@
-from .datasets import load_cytokine_dict_data, load_cytokine_info, load_MS_data
+from .datasets import load_human_cytokine_dict, load_MS_CSF_data, load_Lupus_data, load_cytokine_info
 
-__all__ = ["load_cytokine_dict_data", "load_MS_data", "load_cytokine_info"]
+__all__ = ["load_human_cytokine_dict", "load_MS_CSF_data", "load_Lupus_data", "load_cytokine_info"]
