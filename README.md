@@ -57,15 +57,15 @@ If you don't have Python installed, we recommend installing [uv][].
 
 There are several alternative options to install hucira:
 
-<!--
-1) Install the latest release of `hucira` from [PyPI][]:
+
+1. Install the latest release of `hucira` from [PyPI][]:
 
 ```bash
 pip install hucira
 ```
--->
 
-1. Install the latest development version:
+
+2. Install the latest development version:
 
 ```bash
 pip install git+https://github.com/theislab/huCIRA.git@main
