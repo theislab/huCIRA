@@ -17,9 +17,9 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 
 
-## Getting started
+## Demo
 
-Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline.
+Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus.ipynb) for an example of a full pipeline and outputs.
 
 The core analysis is happening here:
 ```python
@@ -50,7 +50,6 @@ enrichment_results
 ```
 
 
-
 ## Installation
 
 You need to have 3.11 <= Python < 3.14 installed on your system.
@@ -59,10 +58,10 @@ If you don't have Python installed, we recommend installing [uv][].
 There are several alternative options to install hucira:
 
 <!--
-1) Install the latest release of `cytokine_dict` from [PyPI][]:
+1) Install the latest release of `hucira` from [PyPI][]:
 
 ```bash
-pip install cytokine_dict
+pip install hucira
 ```
 -->
 
@@ -71,6 +70,8 @@ pip install cytokine_dict
 ```bash
 pip install git+https://github.com/theislab/huCIRA.git@main
 ```
+
+Installation is expected to complete within a few minutes.
 
 ## Release notes
 
