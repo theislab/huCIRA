@@ -68,7 +68,7 @@ def _get_senders(
         # get gene with smallest abs(log_fold_change), representing limiting gene
         limiting_gene_idx = grouped_celltype_df["logfoldchanges"].idxmin()
         limiting_gene_vals = grouped_celltype_df.loc[limiting_gene_idx, ["logfoldchanges", "pvals", "pvals_adj"]]
-        limiting_gene_vals = grouped_celltype_df.select_dtypes("number").min()
+
         gene_concat = ", ".join(grouped_celltype_df["gene"])
         grouped_rank_genes_df = limiting_gene_vals.to_frame().T
         grouped_rank_genes_df["gene"] = gene_concat
