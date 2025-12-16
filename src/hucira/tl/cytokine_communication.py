@@ -30,7 +30,7 @@ def _get_senders(
 
     adata = adata[:, genes]
 
-    # Ranks genes of sender cytokine.
+    # Ranks genes of sender cytokine across immune cell types.
     adata_out = sc.tl.rank_genes_groups(
         adata,
         groupby=column_cell_type,
@@ -56,16 +56,19 @@ def _get_senders(
         rank_genes_df.append(df)
     rank_genes_df = pd.concat(rank_genes_df, axis=0)
     rank_genes_df.set_index(column_cell_type, inplace=True)
-
     grouped = rank_genes_df.groupby(column_cell_type)
-    grouped_rank_genes_df_all = []
 
-    # Chooses minimum rank_genes_group() statistical parameters of each sender gene.
+    # Chooses minimum rank_genes_group() statistical parameters (considers limiting gene, if there are multiple per cytokine)
+    grouped_rank_genes_df_all = []
     for celltype in grouped.groups.keys():
         grouped_celltype_df = grouped.get_group(celltype)
-        aggregated_vals = grouped_celltype_df.select_dtypes("number").min()
+
+        # get gene with smallest abs(log_fold_change), representing limiting gene
+        limiting_gene_idx = grouped_celltype_df["logfoldchanges"].idxmin()
+        limiting_gene_vals = grouped_celltype_df.loc[limiting_gene_idx, ["logfoldchanges", "pvals", "pvals_adj"]]
+
         gene_concat = ", ".join(grouped_celltype_df["gene"])
-        grouped_rank_genes_df = aggregated_vals.to_frame().T
+        grouped_rank_genes_df = limiting_gene_vals.to_frame().T
         grouped_rank_genes_df["gene"] = gene_concat
         grouped_rank_genes_df.index = [celltype]
         grouped_rank_genes_df_all.append(grouped_rank_genes_df)
@@ -95,7 +98,7 @@ def _get_senders(
     results["mean_X>0"] = results["mean_X"].where(results["mean_X"] > 0, None)
     results.loc[:, "cytokine"] = cytokine
     return results
-
+    
 
 def _get_receivers(
     adata: AnnData, cytokine_info: pd.DataFrame, cytokine: str, column_cell_type: str = "cell_type"
