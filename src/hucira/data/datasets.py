@@ -160,6 +160,7 @@ def load_cytokine_info(save_dir="", force_download=False):
 
 
 
+
 def load_CIP_signatures(save_dir="", force_download=False):
     """
     Download and load metadata file (sheet "13.CIP_activations") from supplemental data: information about CIPs (cytokine induced gene programs).
@@ -176,7 +177,6 @@ def load_CIP_signatures(save_dir="", force_download=False):
     CIP_signatures : pandas.DataFrame
     """
 
-    # Potentially needs to be changed. Currently issues with bot-protected download link.
     url = "https://www.biorxiv.org/content/biorxiv/early/2025/12/15/2025.12.12.693897/DC2/embed/media-2.xlsx?download=true"
     if save_dir == "":
         save_dir = os.getcwd()
@@ -184,9 +184,9 @@ def load_CIP_signatures(save_dir="", force_download=False):
     local_path = os.path.join(save_dir, "CIP_signatures.xlsx")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Cytokine Information sheet...")
+        print("Downloading Cytokine induced gene programs sheet...")
         CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine='openpyxl')
-        CIP_signatures.to_excel("CIP_signatures.xlsx", sheet_name="all_cytokines")
+        CIP_signatures.to_excel(local_path, sheet_name="13.CIP_activations", index=False)
     else:
         print(f"Using cached file: {local_path}")
         CIP_signatures = pd.read_excel(local_path, index_col=0)
