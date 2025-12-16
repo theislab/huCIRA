@@ -32,10 +32,12 @@ def load_human_cytokine_dict(save_dir="", force_download=False):
     if force_download or not os.path.exists(local_path):
         print("Downloading Human Cytokine Dictionary from Parse Biosciences...")
         cytokine_dict = pd.read_csv(url, index_col=0)
+        cytokine_dict = cytokine_dict.reset_index(drop=True)
         cytokine_dict.to_csv(local_path)
     else:
         print(f"Loading from: {local_path}")
         cytokine_dict = pd.read_csv(local_path, index_col=0)
+        cytokine_dict = cytokine_dict.reset_index(drop=True)
 
     return cytokine_dict
 
@@ -154,7 +156,8 @@ def load_cytokine_info(save_dir="", force_download=False):
         cytokine_info.to_excel(local_path, sheet_name="all_cytokines")
     else:
         print(f"Loading from: {local_path}")
-        cytokine_info = pd.read_excel(local_path, index_col=0)
+        cytokine_info = pd.read_excel(local_path)
+        
 
     return cytokine_info
 
@@ -189,7 +192,7 @@ def load_CIP_signatures(save_dir="", force_download=False):
         CIP_signatures.to_excel(local_path, sheet_name="13.CIP_activations", index=False)
     else:
         print(f"Loading from: {local_path}")
-        CIP_signatures = pd.read_excel(local_path, index_col=0)
+        CIP_signatures = pd.read_excel(local_path)
 
     return CIP_signatures
 
