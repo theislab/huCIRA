@@ -62,8 +62,7 @@ def load_MS_CSF_data(save_dir="",
     
     url = "https://figshare.com/ndownloader/files/27405182"
     if save_dir == "":
-        save_dir = os.getcwd()
-        
+        save_dir = os.getcwd()     
     os.makedirs(save_dir, exist_ok=True)
     local_path = os.path.join(save_dir, "MS_CSF.h5ad")
 
@@ -104,7 +103,6 @@ def load_Lupus_data(save_dir="",
     """
     
     url = "https://datasets.cellxgene.cziscience.com/4118e166-34f5-4c1f-9eed-c64b90a3dace.h5ad"
-    
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
@@ -129,5 +127,15 @@ def load_Lupus_data(save_dir="",
 def load_cytokine_info():
     """Cytokine information sheet includes information about sender and receptor genes (for cell-cell communication plot)."""
     url = "https://github.com/theislab/cytokine_dict/edit/main/src/cytokine_dict/data/20250125_cytokine_info_with_functional_classification_LV.xlsx"
-    cytokine_info = pd.read_excel(url, sheet_name="all_cytokines")
+    cytokine_info = pd.read_excel(url, sheet_name="all_cytokines", engine='openpyxl')
     return cytokine_info
+
+
+def load_CIP_signatures():
+    """Download metadata file (sheet "13.CIP_activations") from supplemental data: information about CIPs (cytokine induced gene programs)."""
+
+    url = "https://www.biorxiv.org/content/biorxiv/early/2025/12/15/2025.12.12.693897/DC2/embed/media-2.xlsx?download=true"
+    CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine='openpyxl')
+    return CIP_signatures
+
+    
