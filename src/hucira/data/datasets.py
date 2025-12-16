@@ -5,18 +5,46 @@ import requests
 
 
 
-def load_human_cytokine_dict():
-    """To be changed: Currently referring to local path."""
-    cytokine_dict = pd.read_csv(
-        "/home/icb/jenni.liu/all_projects/cytokine_dict_project/DEGs_all_with_pbs_DE_count.csv", index_col=0
-    )
+def load_human_cytokine_dict(save_dir="",
+                     force_download=False):
+    """
+    Download and load our Human Cytokine Dictionary from Parse Biosciences:
+    https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/
+    
+    Parameters
+    ----------
+    save_dir : str
+        Directory where the file will be saved.
+    force_download : bool
+        Allows user to force a fresh download 
+
+    Returns
+    -------
+    adata : AnnData
+        Human Cytokine Dictionary adata object.
+    """
+
+    url = "https://cdn.parsebiosciences.com/gigalab/10m/DEGs.csv"
+    if save_dir == "":
+        save_dir = os.getcwd()
+    os.makedirs(save_dir, exist_ok=True)
+    local_path = os.path.join(save_dir, "DEGs.csv")
+
+    if force_download or not os.path.exists(local_path):
+        print("Downloading Human Cytokine Dictionary dataset from Parse Biosciences...")
+        cytokine_dict = pd.read_csv(url, index_col=0)
+        cytokine_dict.to_csv(local_path)
+    else:
+        print(f"Using cached file: {local_path}")
+        cytokine_dict = pd.read_csv(local_path, index_col=0)
+
     return cytokine_dict
 
 
 def load_MS_CSF_data(save_dir="",
                      force_download=False):
     """
-    Download and load the MS dataset from automatically.
+    Download and load the MS dataset automatically.
     Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset. https://doi.org/10.6084/m9.figshare.14356661.v1
     
     Parameters
@@ -35,7 +63,8 @@ def load_MS_CSF_data(save_dir="",
     url = "https://figshare.com/ndownloader/files/27405182"
     if save_dir == "":
         save_dir = os.getcwd()
-
+        
+    os.makedirs(save_dir, exist_ok=True)
     local_path = os.path.join(save_dir, "MS_CSF.h5ad")
 
     # Download only if not already in directory
@@ -78,6 +107,7 @@ def load_Lupus_data(save_dir="",
     
     if save_dir == "":
         save_dir = os.getcwd()
+    os.makedirs(save_dir, exist_ok=True)
     local_path = os.path.join(save_dir, "lupus.h5ad")
 
     # Download only if not already in directory
