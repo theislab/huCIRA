@@ -34,7 +34,7 @@ def load_human_cytokine_dict(save_dir="", force_download=False):
         cytokine_dict = pd.read_csv(url, index_col=0)
         cytokine_dict.to_csv(local_path)
     else:
-        print(f"Using cached file: {local_path}")
+        print(f"Loading from: {local_path}")
         cytokine_dict = pd.read_csv(local_path, index_col=0)
 
     return cytokine_dict
@@ -74,7 +74,7 @@ def load_MS_CSF_data(save_dir="", force_download=False):
                     f.write(chunk)
         print(f"Download complete: {local_path}")
     else:
-        print(f"Using cached file: {local_path}")
+        print(f"Loading from: {local_path}")
 
     # Load with scanpy
     return sc.read_h5ad(local_path)
@@ -115,7 +115,7 @@ def load_Lupus_data(save_dir="", force_download=False):
                     f.write(chunk)
         print(f"Download complete: {local_path}")
     else:
-        print(f"Using cached file: {local_path}")
+        print(f"Loading from: {local_path}")
 
     # Load with scanpy
     return sc.read_h5ad(local_path)
@@ -153,7 +153,7 @@ def load_cytokine_info(save_dir="", force_download=False):
         cytokine_info = pd.read_excel(url, sheet_name="all_cytokines", engine='openpyxl')
         cytokine_info.to_excel(local_path, sheet_name="all_cytokines")
     else:
-        print(f"Using cached file: {local_path}")
+        print(f"Loading from: {local_path}")
         cytokine_info = pd.read_excel(local_path, index_col=0)
 
     return cytokine_info
@@ -188,7 +188,7 @@ def load_CIP_signatures(save_dir="", force_download=False):
         CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine='openpyxl')
         CIP_signatures.to_excel(local_path, sheet_name="13.CIP_activations", index=False)
     else:
-        print(f"Using cached file: {local_path}")
+        print(f"Loading from: {local_path}")
         CIP_signatures = pd.read_excel(local_path, index_col=0)
 
     return CIP_signatures
