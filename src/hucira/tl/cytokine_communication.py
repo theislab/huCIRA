@@ -148,6 +148,7 @@ def get_one_senders_and_receivers(
     celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
+     sender_lfc_threshold: float = 0
 ) -> (pd.DataFrame, pd.DataFrame):
     """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine.
 
@@ -181,7 +182,7 @@ def get_one_senders_and_receivers(
     )
     if df_senders is not None:
         df_senders = df_senders.loc[
-            (df_senders.min_pvals < sender_pvalue_threshold) & (df_senders.min_logfoldchanges > 0)
+            (df_senders.min_pvals < sender_pvalue_threshold) & (df_senders.min_logfoldchanges > sender_lfc_threshold)
         ]
     if df_receivers is not None:
         df_receivers = df_receivers.loc[df_receivers.mean_X > receiver_mean_X_threshold]
