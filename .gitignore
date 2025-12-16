@@ -26,3 +26,9 @@ __pycache__/
 
 # ignore the jupyter checkpoints
 .ipynb_checkpoints/
+
+# ignore large datasets (accidentally in root dir):
+/DEGs.csv
+/human_cytokine_dict.csv
+/lupus.h5ad
+/MS_CSF.h5ad
