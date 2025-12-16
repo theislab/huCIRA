@@ -5,8 +5,7 @@ import requests
 
 
 
-def load_human_cytokine_dict(save_dir="",
-                     force_download=False):
+def load_human_cytokine_dict(save_dir="", force_download=False):
     """
     Download and load our Human Cytokine Dictionary from Parse Biosciences:
     https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/
@@ -20,7 +19,7 @@ def load_human_cytokine_dict(save_dir="",
 
     Returns
     -------
-    adata : AnnData
+    cytokine_dict : pandas.DataFrame
         Human Cytokine Dictionary adata object.
     """
 
@@ -28,10 +27,10 @@ def load_human_cytokine_dict(save_dir="",
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
-    local_path = os.path.join(save_dir, "DEGs.csv")
+    local_path = os.path.join(save_dir, "human_cytokine_dict.csv")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Human Cytokine Dictionary dataset from Parse Biosciences...")
+        print("Downloading Human Cytokine Dictionary from Parse Biosciences...")
         cytokine_dict = pd.read_csv(url, index_col=0)
         cytokine_dict.to_csv(local_path)
     else:
@@ -41,8 +40,7 @@ def load_human_cytokine_dict(save_dir="",
     return cytokine_dict
 
 
-def load_MS_CSF_data(save_dir="",
-                     force_download=False):
+def load_MS_CSF_data(save_dir="", force_download=False):
     """
     Download and load the MS dataset automatically.
     Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset. https://doi.org/10.6084/m9.figshare.14356661.v1
@@ -83,8 +81,7 @@ def load_MS_CSF_data(save_dir="",
 
 
 
-def load_Lupus_data(save_dir="",
-                    force_download=False):
+def load_Lupus_data(save_dir="", force_download=False):
     """
     Download and load the lupus dataset from CELLxGENE automatically.
     Richard K. Perez et al. ,Single-cell RNA-seq reveals cell type–specific molecular and genetic associations to lupus.Science376,eabf1970(2022).DOI:10.1126/science.abf1970
@@ -124,18 +121,76 @@ def load_Lupus_data(save_dir="",
     return sc.read_h5ad(local_path)
 
 
-def load_cytokine_info():
-    """Cytokine information sheet includes information about sender and receptor genes (for cell-cell communication plot)."""
-    url = "https://github.com/theislab/cytokine_dict/edit/main/src/cytokine_dict/data/20250125_cytokine_info_with_functional_classification_LV.xlsx"
-    cytokine_info = pd.read_excel(url, sheet_name="all_cytokines", engine='openpyxl')
+def load_cytokine_info(save_dir="", force_download=False):
+    """
+    Download and load Cytokine information sheet: includes information about sender and receptor genes (for cell-cell communication plot)
+    
+    Parameters
+    ----------
+    save_dir : str
+        Directory where the file will be saved.
+    force_download : bool
+        Allows user to force a fresh download 
+
+    Returns
+    -------
+    cytokine_info : pandas.DataFrame
+    """
+    url = (
+        "https://raw.githubusercontent.com/theislab/huCIRA/"
+        "main/src/hucira/data/"
+        "20250125_cytokine_info_with_functional_classification_LV.xlsx"
+    )
+
+    if save_dir == "":
+            save_dir = os.getcwd()
+    os.makedirs(save_dir, exist_ok=True)
+
+    local_path = os.path.join(save_dir, "cytokine_info.xlsx")
+
+    if force_download or not os.path.exists(local_path):
+        print("Downloading Cytokine Information sheet...")
+        cytokine_info = pd.read_excel(url, sheet_name="all_cytokines", engine='openpyxl')
+        cytokine_info.to_excel(local_path, sheet_name="all_cytokines")
+    else:
+        print(f"Using cached file: {local_path}")
+        cytokine_info = pd.read_excel(local_path, index_col=0)
+
     return cytokine_info
 
 
-def load_CIP_signatures():
-    """Download metadata file (sheet "13.CIP_activations") from supplemental data: information about CIPs (cytokine induced gene programs)."""
 
+def load_CIP_signatures(save_dir="", force_download=False):
+    """
+    Download and load metadata file (sheet "13.CIP_activations") from supplemental data: information about CIPs (cytokine induced gene programs).
+    
+    Parameters
+    ----------
+    save_dir : str
+        Directory where the file will be saved.
+    force_download : bool
+        Allows user to force a fresh download 
+
+    Returns
+    -------
+    CIP_signatures : pandas.DataFrame
+    """
+
+    # Potentially needs to be changed. Currently issues with bot-protected download link.
     url = "https://www.biorxiv.org/content/biorxiv/early/2025/12/15/2025.12.12.693897/DC2/embed/media-2.xlsx?download=true"
-    CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine='openpyxl')
+    if save_dir == "":
+        save_dir = os.getcwd()
+    os.makedirs(save_dir, exist_ok=True)
+    local_path = os.path.join(save_dir, "CIP_signatures.xlsx")
+
+    if force_download or not os.path.exists(local_path):
+        print("Downloading Cytokine Information sheet...")
+        CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine='openpyxl')
+        CIP_signatures.to_excel("CIP_signatures.xlsx", sheet_name="all_cytokines")
+    else:
+        print(f"Using cached file: {local_path}")
+        CIP_signatures = pd.read_excel(local_path, index_col=0)
+
     return CIP_signatures
 
     
