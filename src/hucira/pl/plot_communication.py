@@ -367,6 +367,7 @@ def plot_communication(
 
     if cytokine2color is None:
         cytokine_colors = all_palettes["Colorblind"][max(3, len(unique_cytokines))]
+        cytokine_colors = cytokine_colors[:len(unique_cytokines)] # in case there are less than 3 unique cytokines
         # cytokine_colors = all_palettes["Set3"][max(3, len(unique_cytokines))]
         cytokine2color = dict(zip(unique_cytokines, cytokine_colors, strict=True))
 
