@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "hucira"
-version = "0.0.1"
+version = "0.1.0"
 description = "Human Cytokine Dictionary"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -25,13 +25,11 @@ classifiers = [
 ]
 dependencies = [
   "anndata",
-  "anndata>=0.11.4",
   "bokeh",
   "gseapy>=1.1.8",
   "numpy>=2.1",
   "openpyxl",
   "pandas>=2.2.3",
-  #"matplotlib-base>=3.10.1",
   "pycirclize",
   "scanpy>=1.11.1",
   "scikit-learn>=1.5.2",
