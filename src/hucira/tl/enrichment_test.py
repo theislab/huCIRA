@@ -151,8 +151,8 @@ def run_one_enrichment_test(
     contrast_column: str = "disease_state",
     direction: str = "upregulated",
     # Robustness parameters
-    threshold_lfc: float | list[float] = 1.0,
-    threshold_expression: float | list[float] = 0.0,
+    threshold_lfc: float = 1.0,
+    threshold_expression: float = 0.0,
     threshold_pval: float = 0.01,
     # GSEA parameters
     min_size: int = 10,
