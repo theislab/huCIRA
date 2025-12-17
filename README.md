@@ -11,9 +11,15 @@ huCIRA (human Cytokine Immune Response Analysis) provides an easy-to-use interfa
 To get started, simply supply a transcriptomic dataset annotated with immune cell types and the experimental conditions of interest. Using our dictionary as a reference, huCIRA allows you to infer differential cytokine activity and immune program activation across conditions and to map cytokine-mediated interactions between immune cells. Under the hood, huCIRA is based on [gseapy](https://github.com/zqfang/GSEApy/tree/master/gseapy) to run enrichment analyses.
 
 
-
-<img src="docs/_static/images/hucira_overview.svg" width="500" alt="huCIRA">
-
+<p align="center">
+    <br>
+  <img src="docs/_static/images/hucira_overview.svg" width="650" alt="huCIRA"><br><br>
+    <img src="docs/_static/images/hucira_fig6b.png" width="150" alt="Cytokine enrichment">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="docs/_static/images/hucira_fig6e.png" width="150" alt="CIP enrichment">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="docs/_static/images/hucira_fig6g.png" width="220" alt="Cell-cell communication">
+</p>
 
 
 
@@ -35,7 +41,7 @@ enrichment_results = hc.run_one_enrichment_test(
     adata = adata,
     df_hcd_all = human_cytokine_dictionary,
     contrasts_combo = ("healthy", "disease"),
-    celltype_combo = ("B cell", "B"),
+    celltype_combo = ("B cell", "B_cell"),
     contrast_column = "condition",
     celltype_column = "cell_type",
     direction = "upregulated",
@@ -80,6 +86,13 @@ See the [changelog][].
 ## Contact
 
 If you found a bug, please use the [issue tracker][].
+
+## Abstract
+
+Cytokines orchestrate immune responses, yet we still lack a comprehensive understanding of their specific effects across human immune cells due to their pleiotropy, context dependence and extensive functional redundancy. Here, we present a Human Cytokine Dictionary, created from high-resolution single-cell transcriptomes of 9,697,974 human peripheral blood mononuclear cells (PBMC) from 12 donors stimulated in vitro with 90 different cytokines. We describe donor-specific response variation and uncover robust consensus cytokine signatures across individuals. We then delineate similarities between cytokine response profiles, and derive cytokine-induced immune programs that organize responsive genes into data-driven, biologically interpretable functional modules. By integrating cell type-specific responses with expression of cytokines, we infer higher-order cell-to-cell and cytokine-to-cytokine communication networks exemplified by an IL-32-β-initiated signaling cascade, which rewires myeloid programs by inducing neutrophil-recruiting factors while suppressing Th1-responses and promoting IL-10-family cytokines. Finally, we show how the Human Cytokine Dictionary enables the interpretation of cytokine-driven immune responses in other studies and disease contexts, including systemic lupus erythematosus, multiple sclerosis, and non-small cell lung carcinoma. Together, the Human Cytokine Dictionary constitutes the first comprehensive cell type-resolved transcriptional screen of human cytokine responses and provides an essential open-access, easy-to-use community resource with accompanying software package to advance our understanding of cytokine biology in human disease and guide therapeutic discovery.
+
+Please refer to the associated publication [*A single-cell cytokine dictionary of human peripheral blood*](https://www.biorxiv.org/content/10.64898/2025.12.12.693897v1.full) for more information. 
+
 
 ## Citation
 ```bibtex
