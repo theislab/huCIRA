@@ -31,7 +31,7 @@ def check_robustness(
 ):
     """Filters for robust and significant results out of original enrichments (run_enrichment_test() output)
 
-    Returns only the enrichments that are stable across many different tests and statistically signficant.
+    Returns only the enrichments that are stable across many different tests and that are statistically significant.
 
 
     Parameters
@@ -49,7 +49,7 @@ def check_robustness(
     Returns
     -------
     - robust_results
-        DataFrame with robust and significant cytokine enrichments (includes min and max of NES)
+        DataFrame with robust and significant enrichments (includes min and max of NES)
 
     """
     all_thresholds_expression = all_results.threshold_expression.sort_values(ascending=False).unique()
@@ -60,14 +60,26 @@ def check_robustness(
     df.columns.rename("threshold_lfc", inplace=True)
 
     robust_results = []
+    
+    # Get gene_program name of your enrichment analysis.
+    if "cytokine" in all_results.columns:
+        gene_program = "cytokine"
+    elif "CIP" in all_results.columns:
+        gene_program = "CIP"
+    elif "query_program" in all_results.columns:
+        gene_program = "query_program"
+    else:
+        raise ValueError("Missing column that is defining gene programs in 'all_results'.")
+        return 
 
+    
     for contrast in tqdm(all_results.contrast.unique()):
         for celltype_combo in all_results.celltype_combo.unique():
             results_ct = all_results.loc[
                 (all_results.celltype_combo == celltype_combo) & (all_results.contrast == contrast)
             ]
-            for cytokine in results_ct.cytokine.unique():
-                results_ct_cy = results_ct.loc[results_ct.cytokine == cytokine]
+            for program in results_ct[gene_program].unique():
+                results_ct_cy = results_ct.loc[results_ct[gene_program] == program]
                 df_pivot = results_ct_cy.pivot(
                     index="threshold_expression", columns="threshold_lfc", values="FDR q-val"
                 )
@@ -89,7 +101,7 @@ def check_robustness(
                         (
                             celltype_combo,
                             contrast,
-                            cytokine,
+                            program,
                             frac_valid_results,
                             frac_pval_below_alpha,
                             is_robust,
@@ -104,7 +116,7 @@ def check_robustness(
         {
             0: "celltype_combo",
             1: "contrast",
-            2: "cytokine",
+            2: gene_program,
             3: "frac_valid",
             4: "frac_significant",
             5: "is_robust",
@@ -148,6 +160,17 @@ def get_robust_significant_results(
     if alphas is None:
         alphas = [0.1, 0.05, 0.01]
 
+    # Get gene_program name of your enrichment analysis.
+    if "cytokine" in results.columns:
+        gene_program = "cytokine"
+    elif "CIP" in results.columns:
+        gene_program = "CIP"
+    elif "query_program" in results.columns:
+        gene_program = "query_program"
+    else:
+        raise ValueError("Missing column that is defining gene programs in 'results'.")
+        return 
+
     results_robust = []
     for alpha in alphas:
         results_robust.append(
@@ -167,7 +190,7 @@ def get_robust_significant_results(
         return
 
     results_robust = (
-        results_robust.groupby(["contrast", "celltype_combo", "cytokine"])["qval_threshold"]
+        results_robust.groupby(["contrast", "celltype_combo", gene_program])["qval_threshold"]
         .min()
         .to_frame()
         .reset_index()
@@ -176,7 +199,7 @@ def get_robust_significant_results(
     results_mean = (
         results.assign(NES=pd.to_numeric(results.NES, errors="coerce"))  # ensure numeric
         .fillna({"NES": 0})  # only fill NES
-        .groupby(["contrast", "celltype_combo", "cytokine"])["NES"]
+        .groupby(["contrast", "celltype_combo", gene_program])["NES"]
         .mean()
         .to_frame()
         .reset_index()
@@ -186,7 +209,7 @@ def get_robust_significant_results(
     robust_results_dict = {}
     for contrast in results.contrast.unique():
         subset = results_mean[results_mean.contrast == contrast]
-        pivot_df = subset.pivot(index="cytokine", columns="celltype_combo", values="NES")
+        pivot_df = subset.pivot(index=gene_program, columns="celltype_combo", values="NES")
 
         # create empty annotation df
         annot_df = pivot_df.copy().astype(object)
@@ -194,19 +217,19 @@ def get_robust_significant_results(
 
         # fill annotations based on results_robust
         robust_sub = results_robust[results_robust.contrast == contrast]
-        for cytokine in annot_df.index:
+        for program in annot_df.index:
             for celltype in annot_df.columns:
                 qval = robust_sub.loc[
-                    (robust_sub.cytokine == cytokine) & (robust_sub.celltype_combo == celltype), "qval_threshold"
+                    (robust_sub[gene_program] == program) & (robust_sub.celltype_combo == celltype), "qval_threshold"
                 ]
                 if len(qval) != 0:
                     qval = qval.values[0]
                     if qval == 0.1:
-                        annot_df.loc[cytokine, celltype] = "*"
+                        annot_df.loc[program, celltype] = "*"
                     elif qval == 0.05:
-                        annot_df.loc[cytokine, celltype] = "**"
+                        annot_df.loc[program, celltype] = "**"
                     elif qval == 0.01:
-                        annot_df.loc[cytokine, celltype] = "***"
+                        annot_df.loc[program, celltype] = "***"
 
         robust_results_dict[contrast] = [pivot_df, annot_df, robust_sub]
 

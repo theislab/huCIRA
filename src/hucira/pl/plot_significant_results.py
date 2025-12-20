@@ -27,6 +27,8 @@ def plot_significant_results(
     fontsize=6,
     save_fig=False,
     fig_path="",
+    fig_width=10,
+    fig_height=12
 ):
     """Optional heatmap plotting aid: Plots either the robust results from a dict of contrasts or individually per contrast.
 
@@ -63,7 +65,8 @@ def plot_significant_results(
             if selected_cytokines:
                 pivot = pivot.loc[selected_cytokines]
                 annot = annot.loc[selected_cytokines]
-
+                
+            fig, ax = plt.subplots(figsize=(fig_width, fig_height))
             sns.heatmap(
                 pivot,
                 square=True,
@@ -75,6 +78,11 @@ def plot_significant_results(
                 linewidths=0.5,
                 linecolor="white",
                 cbar=True,
+                cbar_kws={
+                    "shrink": 0.5,
+                    "fraction": 0.04,
+                    "pad": 0.02
+                },
                 ax=ax,
             )
 
@@ -110,7 +118,7 @@ def plot_significant_results(
             results_pivot = results_pivot.loc[selected_cytokines]
             df_annot = df_annot.loc[selected_cytokines]
 
-        fig, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
         sns.heatmap(
             results_pivot,
             square=True,
@@ -122,6 +130,11 @@ def plot_significant_results(
             linewidths=0.5,
             linecolor="white",
             cbar=True,
+            cbar_kws={
+                "shrink": 0.5,
+                "fraction": 0.04,
+                "pad": 0.02
+            },
             ax=ax,
         )
         ax.set_title("Contrast1_vs_Contrast2", fontsize=10)
