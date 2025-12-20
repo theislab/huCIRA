@@ -183,18 +183,22 @@ def load_CIP_signatures(save_dir="", force_download=False):
     CIP_signatures : pandas.DataFrame
     """
     
-    url = "https://www.biorxiv.org/content/biorxiv/early/2025/12/15/2025.12.12.693897/DC2/embed/media-2.xlsx?download=true"
+    url = (
+        "https://raw.githubusercontent.com/theislab/huCIRA/"
+        "main/src/hucira/data/"
+        "df_cips_genesets.csv"
+    )
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
-    local_path = os.path.join(save_dir, "CIP_signatures.xlsx")
+    local_path = os.path.join(save_dir, "CIP_signatures.csv")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Cytokine induced gene programs sheet...")
-        CIP_signatures = pd.read_excel(url, sheet_name="13.CIP_activations", engine="openpyxl")
-        CIP_signatures.to_excel(local_path, sheet_name="13.CIP_activations", index=False)
+        print("Downloading Cytokine-induced Gene Programs...")
+        CIP_signatures = pd.read_csv(url, index_col=0)
+        CIP_signatures.to_csv(local_path, index=False)
     else:
         print(f"Loading from: {local_path}")
-        CIP_signatures = pd.read_excel(local_path)
+        CIP_signatures = pd.read_csv(local_path, index_col=0)
 
     return CIP_signatures

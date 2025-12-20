@@ -13,36 +13,91 @@ def _vprint(msg, verbose):
 
 def _get_genesets(
     adata: AnnData,
-    df_hcd_all: pd.DataFrame,
+    df: pd.DataFrame,
     celltype_signature: str,
-    direction: Literal["upregulated", "downregulated", "both"],
-    threshold_pval: float,
-    threshold_lfc: float,
+    direction: Literal["upregulated", "downregulated", "both"] | None = None,
+    threshold_pval: float | None = None,
+    threshold_lfc: float | None = None,
 ) -> tuple[dict[str, list[str]], pd.DataFrame]:
-    # construct signature gene set
-    select = (df_hcd_all.adj_p_value <= threshold_pval) & (df_hcd_all.celltype == celltype_signature)
-    if direction == "upregulated":
-        select = select & (df_hcd_all.log_fc >= threshold_lfc)
-    elif direction == "downregulated":
-        select = select & (df_hcd_all.log_fc <= threshold_lfc)
-    elif direction == "both":
-        select = select & (df_hcd_all.log_fc.abs() >= threshold_lfc)
+    '''
+    Get shared gene sets between query adata and the Human Cytokine Dictionary, CIP signatures, or custom gene signatures of a chosen cell type.
+
+    Parameters
+    ----------
+    - adata: AnnData object with gene expression data.
+    - df: 
+    - celltype_signature:
+    - direction: 
+    - threshold_pval:
+    - threshold_lfc:
+
+    Returns
+    -------
+    - gene_set_dict, gene_set_df: 
+    '''
+    required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
+    required_for_CIP = ["gene", "CIP", "celltype"]
+    
+    # Construct signature gene set if input is human cytokine dictionary
+    if set(required_for_hcd).issubset(df.columns):
+        print(f"Computing gene sets of Human Cytokine Dictionary for {celltype_signature}.")
+        select = (df.adj_p_value <= threshold_pval) & (df.celltype == celltype_signature)
+        if direction == "upregulated":
+            select = select & (df.log_fc >= threshold_lfc)
+        elif direction == "downregulated":
+            select = select & (df.log_fc <= threshold_lfc)
+        elif direction == "both":
+            select = select & (df.log_fc.abs() >= threshold_lfc)
+        else:
+            raise ValueError(f"Invalid direction: {direction}.")
+        df = df.loc[select]
+        
+        gene_set_dict = {}
+        gene_set_df = pd.DataFrame()
+        for cytokine_i, cytokine in enumerate(df.cytokine.unique()):
+            gene_set = df.loc[df.cytokine == cytokine].gene.values
+            gene_set_shared = np.intersect1d(gene_set, adata.var_names)
+            gene_set_df.loc[cytokine_i, "cytokine"] = cytokine
+            gene_set_df.loc[cytokine_i, "num_genes_signature"] = len(gene_set)
+            gene_set_df.loc[cytokine_i, "num_shared_genes_signature"] = len(gene_set_shared)
+            gene_set_df.loc[cytokine_i, "frac_shared_genes_signature"] = len(gene_set_shared) / len(gene_set)
+            gene_set_dict[cytokine] = gene_set_shared
+
+    # Construct signature gene set if input is CIP signatures
+    elif set(required_for_CIP).issubset(df.columns):
+        print(f"Computing gene sets of Cytokine-induced gene programs for {celltype_signature}.")
+        select = (df.celltype == celltype_signature)
+        df = df.loc[select]
+        gene_set_dict = {}
+        gene_set_df = pd.DataFrame()
+        for CIP_i, CIP in enumerate(df.CIP.unique()):
+            gene_set = df.loc[df.CIP == CIP].gene.values
+            gene_set_shared = np.intersect1d(gene_set, adata.var_names)
+            gene_set_df.loc[CIP_i, "CIP"] = CIP
+            gene_set_df.loc[CIP_i, "num_genes_signature"] = len(gene_set)
+            gene_set_df.loc[CIP_i, "num_shared_genes_signature"] = len(gene_set_shared)
+            gene_set_df.loc[CIP_i, "frac_shared_genes_signature"] = len(gene_set_shared) / len(gene_set)
+            gene_set_dict[CIP] = gene_set_shared
+            
+    # Construct signature gene set for custom gene programs
+    elif "query_program" in df.columns:
+        print(f"Computing gene sets of user-defined gene programs for {celltype_signature}.")
+        select = (df.celltype == celltype_signature)
+        df = df.loc[select]
+        gene_set_dict = {}
+        gene_set_df = pd.DataFrame()
+        for query_program_i, query_program in enumerate(df.query_program.unique()):
+            gene_set = df.loc[df.query_program == query_program].gene.values
+            gene_set_shared = np.intersect1d(gene_set, adata.var_names)
+            gene_set_df.loc[query_program_i, "query_program"] = query_program
+            gene_set_df.loc[query_program_i, "num_genes_signature"] = len(gene_set)
+            gene_set_df.loc[query_program_i, "num_shared_genes_signature"] = len(gene_set_shared)
+            gene_set_df.loc[query_program_i, "frac_shared_genes_signature"] = len(gene_set_shared) / len(gene_set)
+            gene_set_dict[query_program] = gene_set_shared
+
     else:
-        raise ValueError(f"Invalid direction: {direction}.")
-
-    df_hcd_ct = df_hcd_all.loc[select]
-
-    gene_set_dict = {}
-    gene_set_df = pd.DataFrame()
-    for cytokine_i, cytokine in enumerate(df_hcd_ct.cytokine.unique()):
-        gene_set = df_hcd_ct.loc[df_hcd_ct.cytokine == cytokine].gene.values
-        gene_set_shared = np.intersect1d(gene_set, adata.var_names)
-        gene_set_df.loc[cytokine_i, "cytokine"] = cytokine
-        gene_set_df.loc[cytokine_i, "num_genes_signature"] = len(gene_set)
-        gene_set_df.loc[cytokine_i, "num_shared_genes_signature"] = len(gene_set_shared)
-        gene_set_df.loc[cytokine_i, "frac_shared_genes_signature"] = len(gene_set_shared) / len(gene_set)
-        gene_set_dict[cytokine] = gene_set_shared
-
+        raise ValueError("invalid input for df parameter. You can use either the Human Cytokine Dictionary with load_human_cytokine_dict(), or our CIP signatures with load_CIP_signatures(). If you want to compute enrichment of custom gene sets, df must have columns: ['gene', 'query_program', 'celltype'].")
+        return 
     return gene_set_dict, gene_set_df
 
 
@@ -56,7 +111,11 @@ def _compute_mu_and_sigma(adata: AnnData, contrast_column: str, condition: str) 
 
 
 def _compute_s2n(
-    adata: AnnData, contrast_column: str, condition_1: str, condition_2: str, precomputed_stats: dict | None = None
+    adata: AnnData, 
+    contrast_column: str, 
+    condition_1: str, 
+    condition_2: str, 
+    precomputed_stats: dict | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Compute the signal-to-noise ratio (S2N) for each gene between two conditions in an AnnData object.
@@ -144,7 +203,7 @@ def _compute_ranking_statistic(
 
 def run_one_enrichment_test(
     adata: AnnData,
-    df_hcd_all: pd.DataFrame,
+    df: pd.DataFrame,
     celltype_combo: tuple[str, str] = ("B cell", "B_cell"),
     celltype_column: str = "cell_type",
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
@@ -173,10 +232,10 @@ def run_one_enrichment_test(
     ----------
     - adata
         The query adata object.
-    - df_hcd_all
+    - df
         Human Cytokine Dictionary
     - celltype_combo
-        A tuple with the celltype name of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+        A tuple with the celltype name of query adata in first position and respective celltype name of df in second position. Simulates "lookup of query in dictionary".
     - celltype_column
         Column name of adata.obs object that stores the cell types.
     - contrasts_combo
@@ -186,9 +245,9 @@ def run_one_enrichment_test(
     - direction
         "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
     - threshold_pval
-        Constructs the gene set: Filters for genes in human df_hcd_all with an adj. p-val lower than threshold_pval.
+        Constructs the gene set: Filters for genes in human df with an adj. p-val lower than threshold_pval.
     - threshold_lfc
-        Constructs the gene set: Filters for genes in human df_hcd_all that are up/downregulated with a lfc higher than threshold_lfc.
+        Constructs the gene set: Filters for genes in human df that are up/downregulated with a lfc higher than threshold_lfc.
     - threshold_expression
         Filters out genes with mean gene expression across all cells lower than threshold_expression.
 
@@ -225,7 +284,7 @@ def run_one_enrichment_test(
     _vprint("Get gene sets:", verbose)
     gene_set_dict, gene_set_df = _get_genesets(
         adata=adata,
-        df_hcd_all=df_hcd_all,
+        df=df,
         celltype_signature=celltype_signature,
         direction=direction,
         threshold_pval=threshold_pval,
@@ -291,16 +350,26 @@ def run_one_enrichment_test(
     results.loc[:, "weight"] = weight
     results.loc[:, "seed"] = seed
     results.loc[:, "threads"] = threads
-
-    results.rename({"Term": "cytokine"}, inplace=True, axis=1)
-    results = pd.merge(results, gene_set_df, on="cytokine")
+    
+    required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
+    if set(required_for_hcd).issubset(df.columns):
+        results.rename({"Term": "cytokine"}, inplace=True, axis=1)
+        results = pd.merge(results, gene_set_df, on="cytokine")        
+    elif "CIP" in df.columns: 
+        results.rename({"Term": "CIP"}, inplace=True, axis=1)
+        results = pd.merge(results, gene_set_df, on="CIP")
+        results.direction = "upregulated"
+    elif "query_program" in df.columns:
+        results.rename({"Term": "query_program"}, inplace=True, axis=1)
+        results = pd.merge(results, gene_set_df, on="query_program")  
+        results.direction = "custom input"
 
     return results
 
 
 def run_all_enrichment_test(
     adata: AnnData,
-    df_hcd_all: pd.DataFrame,
+    df: pd.DataFrame,
     celltype_combos: tuple[str, str] = ("B cell", "B_cell"),
     celltype_column: str = "cell_type",
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
@@ -329,10 +398,10 @@ def run_all_enrichment_test(
     ----------
     - adata
         The query adata object.
-    - df_hcd_all
+    - df
         Human Cytokine Dictionary
     - celltype_combos
-        A tuple with the celltype names of query adata in first position and respective celltype name of df_hcd_all in second position. Simulates "lookup of query in dictionary".
+        A tuple with the celltype names of query adata in first position and respective celltype name of df in second position. Simulates "lookup of query in dictionary".
     - celltype_column
         Column name of adata.obs object that stores the cell types.
     - contrasts_combo
@@ -342,9 +411,9 @@ def run_all_enrichment_test(
     - direction
         "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
     - threshold_pval
-        Constructs the gene set: Filters for genes in human df_hcd_all with an adj. p-val lower than threshold_pval.
+        Constructs the gene set: Filters for genes in human df with an adj. p-val lower than threshold_pval.
     - threshold_lfc
-        Constructs the gene set: Filters for genes in human df_hcd_all that are up/downregulated with a lfc higher than threshold_lfc.
+        Constructs the gene set: Filters for genes in human df that are up/downregulated with a lfc higher than threshold_lfc.
     - threshold_expression
         Filters out genes with mean gene expression across all cells lower than threshold_expression.
 
@@ -364,7 +433,7 @@ def run_all_enrichment_test(
             for expr in threshold_expression:
                 results = run_one_enrichment_test(
                     adata=adata,
-                    df_hcd_all=df_hcd_all,
+                    df=df,
                     celltype_combo=celltype_combo,
                     celltype_column=celltype_column,
                     contrasts_combo=contrasts_combo,
