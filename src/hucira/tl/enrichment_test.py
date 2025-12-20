@@ -25,15 +25,16 @@ def _get_genesets(
     Parameters
     ----------
     - adata: AnnData object with gene expression data.
-    - df: 
-    - celltype_signature:
-    - direction: 
-    - threshold_pval:
-    - threshold_lfc:
+    - df: Either hcd, CIP signature, or a custom dataframe containing columns ["gene", "query_program", "celltype"].
+    - celltype_signature: celltype naming convention needs to match df.celltype
+    - direction: Relevant for hcd, but not for CIP or custom gene program
+    - threshold_pval: Relevant for hcd, but not for CIP or custom gene program
+    - threshold_lfc: Relevant for hcd, but not for CIP or custom gene program
 
     Returns
     -------
-    - gene_set_dict, gene_set_df: 
+    - gene_set_dict: dictionary with cytokine/CIP as key and associated genes as values
+    - gene_set_df: df containing information on gene overlap between query data and gene program for chosen cell type
     '''
     required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
     required_for_CIP = ["gene", "CIP", "celltype"]
