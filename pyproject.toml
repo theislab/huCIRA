@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "hucira"
-version = "v0.1.2"
+version = "0.1.2"
 description = "Human Cytokine Dictionary"
 readme = "README.md"
 license = { file = "LICENSE" }
