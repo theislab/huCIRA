@@ -10,7 +10,6 @@ from anndata import AnnData
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
-
 def _get_senders(
     adata: AnnData,
     cytokine_info: pd.DataFrame,
@@ -27,10 +26,9 @@ def _get_senders(
     if not mask.all():
         print(f"The following cytokine producing genes were not found in the dataset and are excluded: {genes[~mask]}")
         genes = genes[mask]
-
     adata = adata[:, genes]
-
-    # Ranks genes of sender cytokine across immune cell types.
+        
+    # Ranks gene(s) of query sender cytokine across immune cell types.
     adata_out = sc.tl.rank_genes_groups(
         adata,
         groupby=column_cell_type,
@@ -63,10 +61,9 @@ def _get_senders(
     for celltype in grouped.groups.keys():
         grouped_celltype_df = grouped.get_group(celltype)
 
-        # get gene with smallest abs(log_fold_change), representing limiting gene
-        limiting_gene_idx = grouped_celltype_df["logfoldchanges"].idxmin()
-        limiting_gene_vals = grouped_celltype_df.loc[limiting_gene_idx, ["logfoldchanges", "pvals", "pvals_adj"]]
-
+        # get gene with smallest log_fold_change (representing limiting gene), and retrieve stat. parameters
+        limiting_gene_idx = np.argmin(grouped_celltype_df["logfoldchanges"].values)
+        limiting_gene_vals = grouped_celltype_df.iloc[limiting_gene_idx][["logfoldchanges", "pvals", "pvals_adj"]]
         gene_concat = ", ".join(grouped_celltype_df["gene"])
         grouped_rank_genes_df = limiting_gene_vals.to_frame().T
         grouped_rank_genes_df["gene"] = gene_concat
@@ -93,7 +90,7 @@ def _get_senders(
         frac_df.groupby(column_cell_type, observed=False).mean().min(axis=1).to_frame().rename({0: "frac_X"}, axis=1)
     )
 
-    # Final df with informationa about active sender cytokines.
+    # Final df with information about active sender cytokines.
     results = pd.concat([grouped_rank_genes_df_all, results_mean, results_frac], axis=1)
     results["mean_X>0"] = results["mean_X"].where(results["mean_X"] > 0, None)
     results.loc[:, "cytokine"] = cytokine
