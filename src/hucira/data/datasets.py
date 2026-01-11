@@ -45,6 +45,11 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
     if exclude_well_biased_genes:
         cytokine_dict = cytokine_dict.loc[~cytokine_dict.well_biased]
 
+    # Make sure that these three cytokines are removed from dictionary if object not updated yet online.
+    revision_cytokines = ["TGF-beta1", "IL-18", "C3a"]
+    cytokine_dict = cytokine_dict[~cytokine_dict["cytokine"].isin(revision_cytokines)]
+    cytokine_dict = cytokine_dict.reset_index(drop=True)
+        
     return cytokine_dict
 
 
