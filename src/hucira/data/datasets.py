@@ -71,7 +71,7 @@ def load_MS_CSF_data(save_dir="", force_download=False):
         MS adata object.
     """
 
-    url = "https://figshare.com/ndownloader/files/27405182"
+    url = "https://ndownloader.figshare.com/files/27405182"
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
