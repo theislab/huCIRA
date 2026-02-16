@@ -7,10 +7,10 @@ from tqdm.auto import tqdm
 
 
 def _check_robustness_fractions(
-    df_pivot,
-    threshold_qval=0.1,  # adjusted p value
-    threshold_valid=0.1,  # fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
-    threshold_below_alpha=0.75,  # fraction of results that need to be significant
+    df_pivot: pd.DataFrame,
+    threshold_qval: float = 0.1,  # adjusted p value
+    threshold_valid: float = 0.1,  # fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
+    threshold_below_alpha: float = 0.75,  # fraction of results that need to be significant
 ):
     n_total = np.prod(df_pivot.shape)
     n_valid = n_total - df_pivot.isna().sum().sum()
@@ -24,11 +24,11 @@ def _check_robustness_fractions(
 
 
 def check_robustness(
-    all_results,
-    threshold_qval=0.1,
-    threshold_valid=0.1,
-    threshold_below_alpha=0.9,
-):
+    all_results: pd.DataFrame,
+    threshold_qval: float = 0.1,
+    threshold_valid: float = 0.1,
+    threshold_below_alpha: float = 0.9,
+) -> pd.DataFrame:
     """Filters for robust and significant results out of original enrichments (run_enrichment_test() output)
 
     Returns only the enrichments that are stable across many different tests and that are statistically significant.
@@ -131,8 +131,12 @@ def check_robustness(
 
 
 def get_robust_significant_results(
-    results, alphas=None, threshold_valid=0.1, threshold_below_alpha=0.9, display_df_nicely=True
-):
+    results: pd.DataFrame,
+    alphas: list[float] | None = None,
+    threshold_valid: float = 0.1,
+    threshold_below_alpha: float = 0.9, 
+    display_df_nicely: bool = True
+) -> dict:
     """Filters for robust and signifcant results from original enrichments (run_enrichment_test() output)
 
     Returns only the enrichments that are statistically significant (q-val), and stable across many different tests (per contrast).

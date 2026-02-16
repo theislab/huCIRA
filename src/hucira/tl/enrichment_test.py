@@ -102,7 +102,11 @@ def _get_genesets(
     return gene_set_dict, gene_set_df
 
 
-def _compute_mu_and_sigma(adata: AnnData, contrast_column: str, condition: str) -> pd.DataFrame:
+def _compute_mu_and_sigma(
+    adata: AnnData, 
+    contrast_column: str, 
+    condition: str
+) -> pd.DataFrame:
     group = adata[adata.obs[contrast_column] == condition]
     num_cells = group.shape[0]
     X = group.X.toarray() if hasattr(group.X, "toarray") else group.X
@@ -174,7 +178,9 @@ def _compute_s2n(
 
 
 def _compute_ranking_statistic(
-    adata: AnnData, contrast_column: str, contrasts_combo: list[tuple[str, str]]
+    adata: AnnData, 
+    contrast_column: str, 
+    contrasts_combo: list[tuple[str, str]]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     rnk_stats, num_cells = [], []
     precomputed_stats = {}
@@ -209,7 +215,7 @@ def run_one_enrichment_test(
     celltype_column: str = "cell_type",
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
     contrast_column: str = "disease_state",
-    direction: str = "upregulated",
+    direction: Literal["upregulated", "downregulated", "both"] = "upregulated",
     # Filtering parameters for gene set construction
     threshold_lfc: float = 1.0,
     threshold_expression: float = 0.0,
@@ -371,11 +377,11 @@ def run_one_enrichment_test(
 def run_all_enrichment_test(
     adata: AnnData,
     df: pd.DataFrame,
-    celltype_combos: tuple[str, str] = ("B cell", "B_cell"),
+    celltype_combos: list[tuple[str, str]] = None,
     celltype_column: str = "cell_type",
     contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
     contrast_column: str = "disease_state",
-    direction: str = "upregulated",
+    direction: Literal["upregulated", "downregulated", "both"] = "upregulated",
     # Filtering parameters for gene set construction
     threshold_lfc: float | list[float] = 1.0,
     threshold_expression: float | list[float] = 0.0,
@@ -389,7 +395,7 @@ def run_all_enrichment_test(
     verbose: bool = False,
     threads: int = 6,
 ) -> pd.DataFrame:
-    """Computes cytokine enrichment activity in one celltype using GSEA scoring. Loops through several threshold value to obtain more robust gene sets.
+    """Function wrapper: Computes cytokine enrichment activity in one celltype using GSEA scoring. Loops through several threshold values to obtain more robust gene sets.
 
     1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
     2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
