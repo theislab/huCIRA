@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import requests
+import requests_cache
 import scanpy as sc
 
 
@@ -52,7 +53,6 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
         
     return cytokine_dict
 
-
 def load_MS_CSF_data(save_dir="", force_download=False):
     """
     Download and load the MS dataset automatically.
@@ -71,20 +71,26 @@ def load_MS_CSF_data(save_dir="", force_download=False):
         MS adata object.
     """
 
-    url = "https://figshare.com/ndownloader/files/27405182"
+    url = "https://ndownloader.figshare.com/files/27405182"
+
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
+
     local_path = os.path.join(save_dir, "MS_CSF.h5ad")
 
     # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
         print("Downloading MS dataset from figshare...")
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(local_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
+
+        with requests_cache.disabled():  # ← THIS is the key
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()
+                with open(local_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            f.write(chunk)
+
         print(f"Download complete: {local_path}")
     else:
         print(f"Loading from: {local_path}")
