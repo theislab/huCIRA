@@ -88,6 +88,8 @@ nb_execution_mode = "off"
 nb_merge_streams = True
 typehints_defaults = "braces"
 
+suppress_warnings = ["myst.header"]
+
 source_suffix = {
     ".rst": "restructuredtext",
     ".ipynb": "myst-nb",
@@ -100,6 +102,7 @@ intersphinx_mapping = {
     "anndata": ("https://anndata.readthedocs.io/en/stable/", None),
     "scanpy": ("https://scanpy.readthedocs.io/en/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
 }
 
 # List of patterns, relative to source directory, that match files and
@@ -130,7 +133,15 @@ pygments_style = "default"
 katex_prerender = shutil.which(katex.NODEJS_BINARY) is not None
 
 nitpick_ignore = [
-    # If building the documentation fails because of a missing link that is outside your control,
-    # you can add an exception to this list.
-    #     ("py:class", "igraph.Graph"),
+    ("py:class", "pd.DataFrame"),
+    ("py:class", "pandas.DataFrame"),
+    ("py:class", "pandas.core.frame.DataFrame"),
+    ("py:class", "AnnData"),
+]
+
+nitpick_ignore_regex = [
+    (r"py:class", r"optional"),
+    (r"py:class", r"default.*"),
+    # Bare numbers/values that sphinx-autodoc-typehints injects as type refs
+    (r"py:class", r"\d+"),
 ]
