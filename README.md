@@ -112,7 +112,7 @@ Please refer to the associated publication [*A single-cell cytokine dictionary o
 [scverse discourse]: https://discourse.scverse.org/
 [issue tracker]: https://github.com/theislab/huCIRA/issues
 [tests]: https://github.com/theislab/huCIRA/actions/workflows/test.yaml
-[documentation]: https://huCIRA.readthedocs.io](https://hucira.readthedocs.io/en/latest/
+[documentation]: https://hucira.readthedocs.io/en/latest/
 [changelog]: https://huCIRA.readthedocs.io/en/latest/changelog.html
 [api documentation]: https://huCIRA.readthedocs.io/en/latest/api.html
 [pypi]: https://pypi.org/project/hucira
