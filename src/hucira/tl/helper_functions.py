@@ -17,15 +17,15 @@ def create_celltype_combos(adata_celltypes=None, hcd_celltypes=None):
     Returns
     -------
     - celltype_combo
-        A tuple of matched celltype sets. Example output:
-        celltype_combo = (('B cell', 'B'),
+        A list of matched celltype sets. Example output:
+        celltype_combo = [('B cell', 'B'),
                          ('CD4-positive, alpha-beta T cell', 'CD4'),
                          ('CD8-positive, alpha-beta T cell', 'CD8'),
                          ('classical monocyte', 'CD14_Mono'),
                          ('non-classical monocyte', 'CD16_Mono'),
                          ('conventional dendritic cell', 'cDC'),
                          ('natural killer cell', 'NK_CD56hi'),
-                         ('natural killer cell', 'NK_CD56low'))
+                         ('natural killer cell', 'NK_CD56low')]
     """
     # Make sure they are lists
     adata_celltypes = list(adata_celltypes) if adata_celltypes is not None else []
@@ -39,5 +39,5 @@ def create_celltype_combos(adata_celltypes=None, hcd_celltypes=None):
         )
         return
 
-    celltype_combos = tuple(zip(adata_celltypes, hcd_celltypes, strict=True))
+    celltype_combos = list(zip(adata_celltypes, hcd_celltypes, strict=True))
     return celltype_combos

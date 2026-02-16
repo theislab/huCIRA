@@ -19,16 +19,16 @@ def _format_cytokine_names(x):
 
 
 def plot_significant_results(
-    robust_results_dict=None,
-    results_pivot=None,
-    df_annot=None,
-    selected_celltypes=None,
-    selected_cytokines=None,
-    fontsize=6,
-    save_fig=False,
-    fig_path="",
-    fig_width=10,
-    fig_height=12
+    results_pivot: pd.DataFrame,
+    df_annot: pd.DataFrame,
+    robust_results_dict: dict[str, pd.DataFrame] | None = None,
+    selected_celltypes: list[str] | None = None,
+    selected_cytokines: list[str] | None = None,
+    fontsize: float = 6.0,
+    save_fig: bool = False,
+    fig_path: str = "",
+    fig_width: float = 10.0,
+    fig_height: float = 12.0,
 ):
     """Optional heatmap plotting aid: Plots either the robust results from a dict of contrasts or individually per contrast.
 
