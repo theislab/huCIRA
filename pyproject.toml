@@ -33,7 +33,7 @@ dependencies = [
   "pycirclize",
   "scanpy>=1.11.1",
   "scikit-learn>=1.5.2",
-  "requests_cache"
+  "requests-cache"
 
   "scipy>=1.15.2",
   "seaborn>=0.13.2",
