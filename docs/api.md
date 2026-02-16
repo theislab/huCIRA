@@ -1,39 +1,74 @@
 # API
 
-## Preprocessing
+## Data Loading
 
 ```{eval-rst}
-.. module:: cytokine_dict.pp
-.. currentmodule:: cytokine_dict
+.. module:: hucira.data
+.. currentmodule:: hucira
 
 .. autosummary::
     :toctree: generated
 
-    pp.basic_preproc
-    pp.elaborate_example
+    load_human_cytokine_dict
+    load_MS_CSF_data
+    load_Lupus_data
+    load_cytokine_info
+    load_CIP_signatures
 ```
 
 ## Tools
 
+### Enrichment Testing
+
 ```{eval-rst}
-.. module:: cytokine_dict.tl
-.. currentmodule:: cytokine_dict
+.. module:: hucira.tl
+.. currentmodule:: hucira
 
 .. autosummary::
     :toctree: generated
 
-    tl.basic_tool
+    run_one_enrichment_test
+    run_all_enrichment_test
+```
+
+### Robustness Analysis
+
+```{eval-rst}
+.. autosummary::
+    :toctree: generated
+
+    check_robustness
+    get_robust_significant_results
+```
+
+### Cytokine Communication
+
+```{eval-rst}
+.. autosummary::
+    :toctree: generated
+
+    get_one_senders_and_receivers
+    get_all_senders_and_receivers
+```
+
+### Utilities
+
+```{eval-rst}
+.. autosummary::
+    :toctree: generated
+
+    create_celltype_combos
 ```
 
 ## Plotting
 
 ```{eval-rst}
-.. module:: cytokine_dict.pl
-.. currentmodule:: cytokine_dict
+.. module:: hucira.pl
+.. currentmodule:: hucira
 
 .. autosummary::
     :toctree: generated
 
-    pl.basic_plot
-    pl.BasicClass
+    plot_significant_results
+    plot_communication
 ```
