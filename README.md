@@ -39,7 +39,7 @@ human_cytokine_dictionary = hc.load_human_cytokine_dict()
 # 2. Run cytokine enrichment analysis for B cells between healthy and diseased patients
 enrichment_results = hc.run_one_enrichment_test(
     adata = adata,
-    df_hcd_all = human_cytokine_dictionary,
+    df = human_cytokine_dictionary,
     contrasts_combo = ("healthy", "disease"),
     celltype_combo = ("B cell", "B_cell"),
     contrast_column = "condition",
