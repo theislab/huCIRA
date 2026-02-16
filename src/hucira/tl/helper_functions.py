@@ -2,30 +2,27 @@ import warnings
 
 
 def create_celltype_combos(adata_celltypes=None, hcd_celltypes=None):
-    """Reformatting celltype of input data for run_enrichment_test()
+    """Reformat cell-type names for :func:`run_one_enrichment_test`.
 
-    Creates celltype_combos tuple, which is container that matches celltypes of query adata to the closest fit available celltypes from the human cytokine dictionary. The lists and their order have to be manually prepared to fit/match.
-    This is just a helper, the tuple can be manually curated.
+    Creates a ``celltype_combos`` list of tuples that matches cell types of the
+    query *adata* to the closest available cell types from the human cytokine
+    dictionary.  The lists and their order have to be manually prepared to
+    fit/match.  This is just a helper -- the list can be manually curated.
 
     Parameters
     ----------
-    - adata_celltypes
-        ordered celltypes of interest from adata object (matching with hcd_celltypes)
-    - hcd_celltypes
-        ordered celltypes of interest from human cytokine dictionary (matching with adata_celltypes)
+    adata_celltypes : list of str or None
+        Ordered cell types of interest from the adata object (matching
+        *hcd_celltypes*).
+    hcd_celltypes : list of str or None
+        Ordered cell types of interest from the human cytokine dictionary
+        (matching *adata_celltypes*).
 
     Returns
     -------
-    - celltype_combo
-        A list of matched celltype sets. Example output:
-        celltype_combo = [('B cell', 'B'),
-                         ('CD4-positive, alpha-beta T cell', 'CD4'),
-                         ('CD8-positive, alpha-beta T cell', 'CD8'),
-                         ('classical monocyte', 'CD14_Mono'),
-                         ('non-classical monocyte', 'CD16_Mono'),
-                         ('conventional dendritic cell', 'cDC'),
-                         ('natural killer cell', 'NK_CD56hi'),
-                         ('natural killer cell', 'NK_CD56low')]
+    list of tuple
+        A list of matched cell-type pairs, e.g.
+        ``[('B cell', 'B'), ('CD4-positive, alpha-beta T cell', 'CD4'), ...]``.
     """
     # Make sure they are lists
     adata_celltypes = list(adata_celltypes) if adata_celltypes is not None else []

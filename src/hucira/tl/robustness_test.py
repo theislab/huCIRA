@@ -29,28 +29,30 @@ def check_robustness(
     threshold_valid: float = 0.1,
     threshold_below_alpha: float = 0.9,
 ) -> pd.DataFrame:
-    """Filters for robust and significant results out of original enrichments (run_enrichment_test() output)
+    """Filter for robust and significant results out of original enrichments.
 
-    Returns only the enrichments that are stable across many different tests and that are statistically significant.
-
+    Returns only the enrichments that are stable across many different tests
+    and that are statistically significant.
 
     Parameters
     ----------
-    - results
-        The DataFrame output from run_enrichment_test().
-    - threshold_qval
-        Threshold that checks significance of results (leniently). Result is considered significant if its q-val is below this threshold.
-    - threshold_valid
-        The fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
-    - threshold_below_alpha
-        The fraction of results that need to be significant
-
+    all_results : pandas.DataFrame
+        The DataFrame output from :func:`run_one_enrichment_test`.
+    threshold_qval : float
+        Threshold that checks significance of results (leniently).
+        Result is considered significant if its q-val is below this threshold.
+    threshold_valid : float
+        The fraction of results required to even consider this condition.
+        I.e. if the test only ran for one set of thresholds, then it is not
+        very robust.
+    threshold_below_alpha : float
+        The fraction of results that need to be significant.
 
     Returns
     -------
-    - robust_results
-        DataFrame with robust and significant enrichments (includes min and max of NES)
-
+    pandas.DataFrame
+        DataFrame with robust and significant enrichments
+        (includes min and max of NES).
     """
     all_thresholds_expression = all_results.threshold_expression.sort_values(ascending=False).unique()
     all_thresholds_lfc = sorted(all_results.threshold_lfc.unique())
@@ -137,28 +139,36 @@ def get_robust_significant_results(
     threshold_below_alpha: float = 0.9, 
     display_df_nicely: bool = True
 ) -> dict:
-    """Filters for robust and signifcant results from original enrichments (run_enrichment_test() output)
+    """Filter for robust and significant results from original enrichments.
 
-    Returns only the enrichments that are statistically significant (q-val), and stable across many different tests (per contrast).
-    Calls check_robustness for different qval thresholds to explore more stringent significance thresholds. Use for visualization of results (e.g. in a heatmap).
+    Returns only the enrichments that are statistically significant (q-val)
+    and stable across many different tests (per contrast).  Calls
+    :func:`check_robustness` for different q-val thresholds to explore more
+    stringent significance thresholds.  Use for visualization of results
+    (e.g. in a heatmap).
 
     Parameters
     ----------
-    - results
-        The DataFrame output from run_enrichment_test().
-    - alphas
-        List of thresholds (q-val) to check significance of results. Result is considered significant if its q-val is below this threshold.
-    - threshold_valid
-        The fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
-    - threshold_below_alpha
-        The fraction of results that need to be significant
+    results : pandas.DataFrame
+        The DataFrame output from :func:`run_one_enrichment_test`.
+    alphas : list of float or None
+        List of thresholds (q-val) to check significance of results.
+        Result is considered significant if its q-val is below this threshold.
+    threshold_valid : float
+        The fraction of results required to even consider this condition.
+        I.e. if the test only ran for one set of thresholds, then it is not
+        very robust.
+    threshold_below_alpha : float
+        The fraction of results that need to be significant.
+    display_df_nicely : bool
+        Whether to display the result DataFrames inline.
 
     Returns
     -------
-    - robust_results_dict
-        Dictionary mapping contrasts to lists of the enrichment score results (pivot_df), their significance annotations (annot_df), and significance thresholds (robust_sub).
-        robust_results_dict = {contrast1: [pivot_df1, annot_df1, robust_sub1],
-                               contrast2: [pivot_df2, annot_df2, robust_sub2]}
+    dict
+        Dictionary mapping contrasts to lists of the enrichment score results
+        (*pivot_df*), their significance annotations (*annot_df*), and
+        significance thresholds (*robust_sub*).
     """
     # default significant values (matching significance stars)
     if alphas is None:

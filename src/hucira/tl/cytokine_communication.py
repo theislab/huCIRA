@@ -148,8 +148,8 @@ def get_one_senders_and_receivers(
     celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
-     sender_lfc_threshold: float = 0
-) -> (pd.DataFrame, pd.DataFrame):
+    sender_lfc_threshold: float = 0,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine.
 
     Best for exploration purposes of a singular cytokine.
@@ -197,7 +197,7 @@ def get_all_senders_and_receivers(
     celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
-) -> (pd.DataFrame, pd.DataFrame):
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a list of cytokines.
 
     Best for visualization purposes (for plot_communication function).

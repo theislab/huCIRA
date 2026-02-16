@@ -229,39 +229,59 @@ def run_one_enrichment_test(
     verbose: bool = False,
     threads: int = 6,
 ) -> pd.DataFrame:
-    """Computes cytokine enrichment activity in one celltype using GSEA scoring.
+    """Compute cytokine enrichment activity in one cell type using GSEA scoring.
 
-    1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
-    2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
-    3. Computes enrichment of each cytokine by matching their associated gene set in the ranked list.
+    1. "Looks up" query cell type in human cytokine dictionary and retrieves
+       associated up-/downregulated genes per cytokine as reference.
+    2. Creates ranking of query data genes contrasting condition 1 vs
+       condition 2.
+    3. Computes enrichment of each cytokine by matching their associated gene
+       set in the ranked list.
 
     Parameters
     ----------
-    - adata
-        The query adata object.
-    - df
-        Human Cytokine Dictionary
-    - celltype_combo
-        A tuple with the celltype name of query adata in first position and respective celltype name of df in second position. Simulates "lookup of query in dictionary".
-    - celltype_column
-        Column name of adata.obs object that stores the cell types.
-    - contrasts_combo
-        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
-    - contrast_column
-        Column name of adata.obs object that stores the biological condition of samples.
-    - direction
-        "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
-    - threshold_pval
-        Constructs the gene set: Filters for genes in human df with an adj. p-val lower than threshold_pval.
-    - threshold_lfc
-        Constructs the gene set: Filters for genes in human df that are up/downregulated with a lfc higher than threshold_lfc.
-    - threshold_expression
-        Filters out genes with mean gene expression across all cells lower than threshold_expression.
+    adata : ~anndata.AnnData
+        The query AnnData object.
+    df : pandas.DataFrame
+        Human Cytokine Dictionary, CIP signatures, or custom gene-program
+        DataFrame.
+    celltype_combo : tuple of (str, str)
+        Cell-type name in the query *adata* (first) and the corresponding
+        cell-type name in *df* (second).
+    celltype_column : str
+        Column name in ``adata.obs`` that stores the cell types.
+    contrasts_combo : tuple of (str, str) or list of tuple
+        Pair(s) of biological conditions to compare.
+    contrast_column : str
+        Column name in ``adata.obs`` that stores condition labels.
+    direction : str
+        One of ``"upregulated"``, ``"downregulated"``, or ``"both"``.
+    threshold_lfc : float
+        Minimum log-fold change used to build the gene set.
+    threshold_expression : float
+        Minimum mean gene expression across all cells.
+    threshold_pval : float
+        Maximum adjusted p-value used to build the gene set.
+    min_size : int
+        Minimum gene-set size passed to GSEA.
+    max_size : int
+        Maximum gene-set size passed to GSEA.
+    permutation_num : int
+        Number of permutations for GSEA.
+    weight : float
+        GSEA weighting exponent.
+    seed : int
+        Random seed for reproducibility.
+    verbose : bool
+        Whether to print progress messages.
+    threads : int
+        Number of threads for GSEA.
 
     Returns
     -------
-    - results
-        A DataFrame with all computed enrichment scores and statistical parameters. Not filtered by significance or robustness yet.
+    pandas.DataFrame
+        DataFrame with all computed enrichment scores and statistical
+        parameters.  Not filtered by significance or robustness yet.
     """
     if not isinstance(contrasts_combo, list):
         assert isinstance(contrasts_combo, tuple)
@@ -395,39 +415,54 @@ def run_all_enrichment_test(
     verbose: bool = False,
     threads: int = 6,
 ) -> pd.DataFrame:
-    """Function wrapper: Computes cytokine enrichment activity in one celltype using GSEA scoring. Loops through several threshold values to obtain more robust gene sets.
+    """Compute cytokine enrichment across multiple threshold values for robustness.
 
-    1. "Looks up" query cell type in human cytokine dictionary and retrieves associated up-/downregulated genes per cytokine as reference.
-    2. Creates ranking of query data genes contrasting condition1 vs condition2. A continuum from genes most associated with condition1 (top) to genes most associated with condition2 (bottom)
-    3. Computes enrichment of each cytokine by matching their associated gene set in the ranked list.
+    Wrapper around :func:`run_one_enrichment_test` that loops through several
+    threshold values to obtain more robust gene sets.
 
     Parameters
     ----------
-    - adata
-        The query adata object.
-    - df
-        Human Cytokine Dictionary
-    - celltype_combos
-        A tuple with the celltype names of query adata in first position and respective celltype name of df in second position. Simulates "lookup of query in dictionary".
-    - celltype_column
-        Column name of adata.obs object that stores the cell types.
-    - contrasts_combo
-        Tuple that stores two biological conditions that are compared to each other in enrichment. E.g., which cytokines are enriched in healthy samples vs disease samples? Can be a list of tuples, function automatically loops through them.
-    - contrast_column
-        Column name of adata.obs object that stores the biological condition of samples.
-    - direction
-        "upregulated", "downregulated", or "both" are valid input. Up-/downregulation w.r.t condition1 (condition1 is the first of the two elements in each contrasts tuple.
-    - threshold_pval
-        Constructs the gene set: Filters for genes in human df with an adj. p-val lower than threshold_pval.
-    - threshold_lfc
-        Constructs the gene set: Filters for genes in human df that are up/downregulated with a lfc higher than threshold_lfc.
-    - threshold_expression
-        Filters out genes with mean gene expression across all cells lower than threshold_expression.
+    adata : ~anndata.AnnData
+        The query AnnData object.
+    df : pandas.DataFrame
+        Human Cytokine Dictionary, CIP signatures, or custom gene-program
+        DataFrame.
+    celltype_combos : list of tuple
+        List of ``(query_celltype, df_celltype)`` pairs.
+    celltype_column : str
+        Column name in ``adata.obs`` that stores the cell types.
+    contrasts_combo : tuple of (str, str) or list of tuple
+        Pair(s) of biological conditions to compare.
+    contrast_column : str
+        Column name in ``adata.obs`` that stores condition labels.
+    direction : str
+        One of ``"upregulated"``, ``"downregulated"``, or ``"both"``.
+    threshold_lfc : float or list of float
+        Log-fold change threshold(s) for building the gene set.
+    threshold_expression : float or list of float
+        Mean gene-expression threshold(s).
+    threshold_pval : float
+        Maximum adjusted p-value for the gene set.
+    min_size : int
+        Minimum gene-set size passed to GSEA.
+    max_size : int
+        Maximum gene-set size passed to GSEA.
+    permutation_num : int
+        Number of permutations for GSEA.
+    weight : float
+        GSEA weighting exponent.
+    seed : int
+        Random seed for reproducibility.
+    verbose : bool
+        Whether to print progress messages.
+    threads : int
+        Number of threads for GSEA.
 
     Returns
     -------
-    - results
-        A DataFrame with all computed enrichment scores and statistical parameters. All results from multiple thresholds (ran for robustness).
+    pandas.DataFrame
+        DataFrame with all computed enrichment scores and statistical
+        parameters from multiple thresholds.
     """
     if isinstance(threshold_lfc, float):
         threshold_lfc = [threshold_lfc]
