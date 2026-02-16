@@ -3,8 +3,8 @@
 [![Tests][badge-tests]][tests]
 [![Documentation][badge-docs]][documentation]
 
-[badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/cytokine_dict/test.yaml?branch=main
-[badge-docs]: https://img.shields.io/readthedocs/cytokine_dict
+[badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/huCIRA/test.yaml?branch=main
+[badge-docs]: https://img.shields.io/readthedocs/hucira
 
 huCIRA (human Cytokine Immune Response Analysis) provides an easy-to-use interface to analyze cytokine signaling and cytokine-induced immune program enrichment in transcriptomic datasets.
 
@@ -13,12 +13,12 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 <p align="center">
     <br>
-  <img src="docs/_static/images/hucira_overview.svg" width="650" alt="huCIRA"><br><br>
-    <img src="docs/_static/images/hucira_fig6b.png" width="150" alt="Cytokine enrichment">
+  <img src="https://raw.githubusercontent.com/theislab/huCIRA/main/docs/_static/images/hucira_overview.svg" width="650" alt="huCIRA"><br><br>
+    <img src="https://raw.githubusercontent.com/theislab/huCIRA/main/docs/_static/images/hucira_fig6b.png" width="150" alt="Cytokine enrichment">
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="docs/_static/images/hucira_fig6e.png" width="150" alt="CIP enrichment">
+    <img src="https://raw.githubusercontent.com/theislab/huCIRA/main/docs/_static/images/hucira_fig6e.png" width="150" alt="CIP enrichment">
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="docs/_static/images/hucira_fig6g.png" width="220" alt="Cell-cell communication">
+    <img src="https://raw.githubusercontent.com/theislab/huCIRA/main/docs/_static/images/hucira_fig6g.png" width="220" alt="Cell-cell communication">
 </p>
 
 
@@ -110,9 +110,9 @@ Please refer to the associated publication [*A single-cell cytokine dictionary o
 
 [uv]: https://github.com/astral-sh/uv
 [scverse discourse]: https://discourse.scverse.org/
-[issue tracker]: https://github.com/theislab/cytokine_dict/issues
-[tests]: https://github.com/theislab/cytokine_dict/actions/workflows/test.yaml
-[documentation]: https://cytokine_dict.readthedocs.io
-[changelog]: https://cytokine_dict.readthedocs.io/en/latest/changelog.html
-[api documentation]: https://cytokine_dict.readthedocs.io/en/latest/api.html
-[pypi]: https://pypi.org/project/cytokine_dict
+[issue tracker]: https://github.com/theislab/huCIRA/issues
+[tests]: https://github.com/theislab/huCIRA/actions/workflows/test.yaml
+[documentation]: https://huCIRA.readthedocs.io
+[changelog]: https://huCIRA.readthedocs.io/en/latest/changelog.html
+[api documentation]: https://huCIRA.readthedocs.io/en/latest/api.html
+[pypi]: https://pypi.org/project/hucira

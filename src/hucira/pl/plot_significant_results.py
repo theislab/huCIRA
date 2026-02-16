@@ -30,25 +30,35 @@ def plot_significant_results(
     fig_width: float = 10.0,
     fig_height: float = 12.0,
 ):
-    """Optional heatmap plotting aid: Plots either the robust results from a dict of contrasts or individually per contrast.
+    """Plot a heatmap of robust enrichment results.
+
+    Plots either the robust results from a dict of contrasts or individually
+    per contrast.
 
     Parameters
     ----------
-    - robust_results_dict:
-        robust enrichment score dictionary from get_significant_results(). If this argument is present it has precedence over results_pivot and df_annot.
-    - results_pivot:
-        pandas DataFrame of robust enrichment for results from one contrast
-    - df_annot:
-        pandas DataFrame of robust enrichment significance annotations for results from one contrast
-    - selected_celltypes:
-        Can choose to only visualize selected celltypes out of available from robust results. Must be in robust results, otherwise error.
-    - selected_cytokines:
-        Can choose to only visualize selected celltypes out of available from robust results. Must be in robust results, otherwise error.
-
-    Returns
-    -------
-    - Nothing. Plotting function only
-
+    results_pivot : pandas.DataFrame
+        Pivot DataFrame of robust enrichment scores for one contrast.
+    df_annot : pandas.DataFrame
+        Annotation DataFrame of significance stars for one contrast.
+    robust_results_dict : dict or None
+        Robust enrichment score dictionary from
+        :func:`~hucira.get_robust_significant_results`.  If provided, takes
+        precedence over *results_pivot* and *df_annot*.
+    selected_celltypes : list of str or None
+        Subset of cell types to visualise.
+    selected_cytokines : list of str or None
+        Subset of cytokines to visualise.
+    fontsize : float
+        Font size for annotations and tick labels.
+    save_fig : bool
+        Whether to save the figure to disk.
+    fig_path : str
+        Directory for saved figures.
+    fig_width : float
+        Figure width in inches.
+    fig_height : float
+        Figure height in inches.
     """
     # Case 1: robust_results_dict is provided. This precedes the other arguments.
     if robust_results_dict is not None and len(robust_results_dict) > 0:
