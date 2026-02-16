@@ -32,3 +32,8 @@ __pycache__/
 /human_cytokine_dict.csv
 /lupus.h5ad
 /MS_CSF.h5ad
+
+# ignore large datasets (created during tutorial runs)
+/docs/notebooks/MS_CSF.h5ad
+/docs/notebooks/Tutorial_huCIRA_MultipleSklerosis_hcd_working.ipynb
+/docs/notebooks/human_cytokine_dict.csv
