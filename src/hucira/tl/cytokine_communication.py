@@ -6,7 +6,6 @@ import pandas as pd
 import scanpy as sc
 from anndata import AnnData
 
-
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
@@ -27,7 +26,7 @@ def _get_senders(
         print(f"The following cytokine producing genes were not found in the dataset and are excluded: {genes[~mask]}")
         genes = genes[mask]
     adata = adata[:, genes]
-        
+
     # Ranks gene(s) of query sender cytokine across immune cell types.
     adata_out = sc.tl.rank_genes_groups(
         adata,
@@ -95,7 +94,7 @@ def _get_senders(
     results["mean_X>0"] = results["mean_X"].where(results["mean_X"] > 0, None)
     results.loc[:, "cytokine"] = cytokine
     return results
-    
+
 
 def _get_receivers(
     adata: AnnData, cytokine_info: pd.DataFrame, cytokine: str, column_cell_type: str = "cell_type"
@@ -229,8 +228,8 @@ def get_all_senders_and_receivers(
             cytokine_info=cytokine_info,
             cytokine=cytokine,
             celltype_colname=celltype_colname,
-            sender_pvalue_threshold=0.1,
-            receiver_mean_X_threshold=0,
+            sender_pvalue_threshold=sender_pvalue_threshold,
+            receiver_mean_X_threshold=receiver_mean_X_threshold,
         )
 
         if cytokine == "IL-32-beta":
