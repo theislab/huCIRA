@@ -126,7 +126,7 @@ def plot_communication(
 
     if all_celltypes is None:
         all_celltypes = sorted(np.union1d(df_src.celltype.unique(), df_tgt.celltype.unique()))
-    # celltype_colors = all_palettes["Set3"][len(all_celltypes)]
+
     if celltype2color is None:
         n = len(all_celltypes)
 
@@ -147,8 +147,6 @@ def plot_communication(
 
     all_cytokines = np.union1d(df_src.cytokine.unique(), df_tgt.cytokine.unique())
     cytokine2idx = {cytokine: k for k, cytokine in enumerate(all_cytokines)}
-    # cytokine_colors = all_palettes["Category20"][len(all_cytokines)]
-    # cytokine2color = dict(zip(all_cytokines, cytokine_colors, strict=True))
 
     unique_cytokines = df_src.cytokine.unique()
     if df_enrichment is not None:
@@ -158,7 +156,6 @@ def plot_communication(
     if cytokine2color is None:
         cytokine_colors = all_palettes["Colorblind"][max(3, len(unique_cytokines))]
         cytokine_colors = cytokine_colors[: len(unique_cytokines)]  # in case there are less than 3 unique cytokines
-        # cytokine_colors = all_palettes["Set3"][max(3, len(unique_cytokines))]
         cytokine2color = dict(zip(unique_cytokines, cytokine_colors, strict=True))
 
     # draw outer circle / cell type partitions
@@ -183,7 +180,6 @@ def plot_communication(
             va = "top"
 
         track.axis(facecolor=celltype2color[sector.name])
-        # track.text(shorten_cell_type_names(sector.name), color="black", size=6, r=110, rotation="horizontal", adjust_rotation=False, family="sans-serif", ha=ha)
         track.text(
             sector.name,
             color="black",
