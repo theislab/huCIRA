@@ -32,7 +32,7 @@ The core analysis is happening here:
 import scanpy as sc
 import hucira as hc
 
-# 1. Load your data. 
+# 1. Load your data.
 adata = sc.read_h5ad("path/to/your_transcriptome.h5ad")
 # Tries to load dictionary from "save_dir" or starts fresh download to specified "save_dir".
 # If "save_dir" is not defined, it points to your current working directory.
@@ -93,7 +93,7 @@ If you found a bug, please use the [issue tracker][].
 
 Cytokines orchestrate immune responses, yet we still lack a comprehensive understanding of their specific effects across human immune cells due to their pleiotropy, context dependence and extensive functional redundancy. Here, we present a Human Cytokine Dictionary, created from high-resolution single-cell transcriptomes of 9,697,974 human peripheral blood mononuclear cells (PBMC) from 12 donors stimulated in vitro with 90 different cytokines. We describe donor-specific response variation and uncover robust consensus cytokine signatures across individuals. We then delineate similarities between cytokine response profiles, and derive cytokine-induced immune programs that organize responsive genes into data-driven, biologically interpretable functional modules. By integrating cell type-specific responses with expression of cytokines, we infer higher-order cell-to-cell and cytokine-to-cytokine communication networks exemplified by an IL-32-β-initiated signaling cascade, which rewires myeloid programs by inducing neutrophil-recruiting factors while suppressing Th1-responses and promoting IL-10-family cytokines. Finally, we show how the Human Cytokine Dictionary enables the interpretation of cytokine-driven immune responses in other studies and disease contexts, including systemic lupus erythematosus, multiple sclerosis, and non-small cell lung carcinoma. Together, the Human Cytokine Dictionary constitutes the first comprehensive cell type-resolved transcriptional screen of human cytokine responses and provides an essential open-access, easy-to-use community resource with accompanying software package to advance our understanding of cytokine biology in human disease and guide therapeutic discovery.
 
-Please refer to the associated publication [*A single-cell cytokine dictionary of human peripheral blood*](https://www.biorxiv.org/content/10.64898/2025.12.12.693897v1.full) for more information. 
+Please refer to the associated publication [*A single-cell cytokine dictionary of human peripheral blood*](https://www.biorxiv.org/content/10.64898/2025.12.12.693897v1.full) for more information.
 
 
 ## Citation

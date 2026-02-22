@@ -11,7 +11,7 @@ def _check_robustness_fractions(
     threshold_qval: float = 0.1,  # adjusted p value
     threshold_valid: float = 0.1,  # fraction of results required to even consider this condition. I.e. if the test only ran for one set of thresholds, then it is not very robust.
     threshold_below_alpha: float = 0.75,  # fraction of results that need to be significant
-):
+) -> tuple[float, float, bool]:
     n_total = np.prod(df_pivot.shape)
     n_valid = n_total - df_pivot.isna().sum().sum()
     n_below_alpha = (
@@ -62,7 +62,7 @@ def check_robustness(
     df.columns.rename("threshold_lfc", inplace=True)
 
     robust_results = []
-    
+
     # Get gene_program name of your enrichment analysis.
     if "cytokine" in all_results.columns:
         gene_program = "cytokine"
@@ -72,9 +72,8 @@ def check_robustness(
         gene_program = "query_program"
     else:
         raise ValueError("Missing column that is defining gene programs in 'all_results'.")
-        return 
+        return
 
-    
     for contrast in tqdm(all_results.contrast.unique()):
         for celltype_combo in all_results.celltype_combo.unique():
             results_ct = all_results.loc[
@@ -136,9 +135,9 @@ def get_robust_significant_results(
     results: pd.DataFrame,
     alphas: list[float] | None = None,
     threshold_valid: float = 0.1,
-    threshold_below_alpha: float = 0.9, 
-    display_df_nicely: bool = True
-) -> dict:
+    threshold_below_alpha: float = 0.9,
+    display_df_nicely: bool = True,
+) -> dict | None:
     """Filter for robust and significant results from original enrichments.
 
     Returns only the enrichments that are statistically significant (q-val)
@@ -183,7 +182,7 @@ def get_robust_significant_results(
         gene_program = "query_program"
     else:
         raise ValueError("Missing column that is defining gene programs in 'results'.")
-        return 
+        return
 
     results_robust = []
     for alpha in alphas:

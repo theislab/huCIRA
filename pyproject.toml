@@ -31,9 +31,9 @@ dependencies = [
   "openpyxl",
   "pandas>=2.2.3",
   "pycirclize",
+  "requests-cache",
   "scanpy>=1.11.1",
   "scikit-learn>=1.5.2",
-  "requests-cache",
   "scipy>=1.15.2",
   "seaborn>=0.13.2",
   # for debug logging (referenced from the issue template)
