@@ -1,12 +1,28 @@
 import logging
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 logger = logging.getLogger(__name__)
+
+
+def _check_plot_deps():
+    """Raise an informative error when optional plotting dependencies are missing."""
+    missing = []
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        missing.append("matplotlib")
+    try:
+        import seaborn  # noqa: F401
+    except ImportError:
+        missing.append("seaborn")
+    if missing:
+        raise ImportError(
+            f"Missing optional plotting dependencies: {', '.join(missing)}. "
+            "Install them with: pip install 'hucira[plot]'"
+        )
 
 
 def _format_cytokine_names(x) -> str | list[str]:
@@ -63,6 +79,11 @@ def plot_significant_results(
     fig_height : float
         Figure height in inches.
     """
+    _check_plot_deps()
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     # Case 1: robust_results_dict is provided. This precedes the other arguments.
     if robust_results_dict is not None and len(robust_results_dict) > 0:
         n = len(robust_results_dict)

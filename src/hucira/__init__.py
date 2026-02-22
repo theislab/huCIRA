@@ -2,10 +2,7 @@ import logging
 from importlib.metadata import version
 
 from .data import load_CIP_signatures, load_cytokine_info, load_human_cytokine_dict, load_Lupus_data, load_MS_CSF_data
-from .pl import (
-    plot_communication,
-    plot_significant_results,
-)
+from .pl import plot_communication, plot_significant_results
 from .tl import (
     check_robustness,
     create_celltype_combos,
