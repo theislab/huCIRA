@@ -1,9 +1,12 @@
+import logging
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+logger = logging.getLogger(__name__)
 
 
 def _format_cytokine_names(x) -> str | list[str]:
@@ -157,5 +160,5 @@ def plot_significant_results(
             plt.savefig(os.path.join(fig_path, "significant_results.svg"), bbox_inches="tight", pad_inches=0, dpi=500)
         return
 
-    print("Nothing was plotted. Check input data!")
+    logger.warning("Nothing was plotted. Check input data!")
     return

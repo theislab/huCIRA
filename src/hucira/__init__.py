@@ -1,7 +1,6 @@
+import logging
 from importlib.metadata import version
 
-# from . import data, pl, tl
-# __all__ = ["data", "pl", "tl"]
 from .data import load_CIP_signatures, load_cytokine_info, load_human_cytokine_dict, load_Lupus_data, load_MS_CSF_data
 from .pl import (
     plot_communication,
@@ -16,6 +15,10 @@ from .tl import (
     run_all_enrichment_test,
     run_one_enrichment_test,
 )
+
+# Configure library-level logger so INFO messages are visible by default.
+logging.getLogger(__name__).addHandler(logging.StreamHandler())
+logging.getLogger(__name__).setLevel(logging.INFO)
 
 __all__ = [
     "load_cytokine_dict_data",
