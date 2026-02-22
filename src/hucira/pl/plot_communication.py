@@ -1,13 +1,31 @@
 import warnings
 
-import matplotlib.lines as mlines
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from bokeh.palettes import all_palettes
-from pycirclize import Circos
 
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+
+
+def _check_plot_deps():
+    """Raise an informative error when optional plotting dependencies are missing."""
+    missing = []
+    try:
+        import bokeh.palettes  # noqa: F401
+    except ImportError:
+        missing.append("bokeh")
+    try:
+        import pycirclize  # noqa: F401
+    except ImportError:
+        missing.append("pycirclize")
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        missing.append("matplotlib")
+    if missing:
+        raise ImportError(
+            f"Missing optional plotting dependencies: {', '.join(missing)}. "
+            "Install them with: pip install 'hucira[plot]'"
+        )
 
 
 def plot_communication(
@@ -28,7 +46,7 @@ def plot_communication(
     fontsize: int = 6,
     loc: str = "upper left",
     bbox_to_anchor: tuple[float, float] = (1, 1),
-) -> tuple[list[mlines.Line2D], list[str]]:
+) -> tuple[list, list[str]]:
     """Generates a Circos plot to visualize cell-cell communication based on cytokine producers and receivers.
 
     The function filters the input dataframes based on thresholds for fraction of expressing cells
@@ -79,6 +97,13 @@ def plot_communication(
         Bounding box anchor for the legend.
 
     """
+    _check_plot_deps()
+
+    import matplotlib.lines as mlines
+    import matplotlib.pyplot as plt
+    from bokeh.palettes import all_palettes
+    from pycirclize import Circos
+
     if frac_expressing_cells_sender is not None:
         df_src = df_src.loc[df_src.frac_X > frac_expressing_cells_sender]
     if frac_expressing_cells_receiver is not None:

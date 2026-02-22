@@ -72,14 +72,32 @@ There are several alternative options to install hucira:
 pip install hucira
 ```
 
+2. To use the plotting functions (`plot_significant_results`, `plot_communication`), install with the `plot` extra:
 
-2. Install the latest development version:
+```bash
+pip install 'hucira[plot]'
+```
+
+3. Install the latest development version:
 
 ```bash
 pip install git+https://github.com/theislab/huCIRA.git@main
 ```
 
 Installation is expected to complete within a few minutes.
+
+### Development setup
+
+To set up a development environment, clone the repository and install with the `dev` extra:
+
+```bash
+git clone https://github.com/theislab/huCIRA.git
+cd huCIRA
+pip install -e '.[dev,plot]'
+pre-commit install
+```
+
+The `pre-commit install` step registers git hooks that automatically run linting and formatting checks (via [ruff][]) before each commit.
 
 ## Release notes
 
@@ -110,6 +128,7 @@ Please refer to the associated publication [*A single-cell cytokine dictionary o
 }
 ```
 
+[ruff]: https://docs.astral.sh/ruff/
 [uv]: https://github.com/astral-sh/uv
 [scverse discourse]: https://discourse.scverse.org/
 [issue tracker]: https://github.com/theislab/huCIRA/issues
