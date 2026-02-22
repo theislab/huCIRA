@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import os
 
 import pandas as pd
@@ -8,9 +9,12 @@ import scanpy as sc
 from anndata import AnnData
 from tqdm.auto import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 def _download_file(url: str, local_path: str, description: str, disable_cache: bool = False) -> None:
     """Download a file with a tqdm progress bar."""
+    logger.info("Downloading %s from %s", description, url)
     ctx = requests_cache.disabled() if disable_cache else contextlib.nullcontext()
     with ctx:
         with requests.get(url, stream=True) as r:
@@ -56,7 +60,7 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
         cytokine_dict = cytokine_dict.reset_index(drop=True)
         cytokine_dict.to_csv(local_path)
     else:
-        print(f"Loading from: {local_path}")
+        logger.info("Loading from: %s", local_path)
         cytokine_dict = pd.read_csv(local_path, index_col=0)
         cytokine_dict = cytokine_dict.reset_index(drop=True)
 
@@ -99,9 +103,9 @@ def load_MS_CSF_data(save_dir="", force_download=False) -> AnnData:
 
     # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
-        _download_file(url, local_path, "MS dataset (figshare)", disable_cache=True)
+        _download_file(url, local_path, "MS dataset", disable_cache=True)
     else:
-        print(f"Loading from: {local_path}")
+        logger.info("Loading from: %s", local_path)
 
     # Load with scanpy
     return sc.read_h5ad(local_path)
@@ -133,9 +137,9 @@ def load_Lupus_data(save_dir="", force_download=False) -> AnnData:
 
     # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
-        _download_file(url, local_path, "Lupus dataset (CELLxGENE)")
+        _download_file(url, local_path, "Lupus dataset")
     else:
-        print(f"Loading from: {local_path}")
+        logger.info("Loading from: %s", local_path)
 
     # Load with scanpy
     return sc.read_h5ad(local_path)
@@ -175,7 +179,7 @@ def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
         cytokine_info = pd.read_excel(local_path, sheet_name="all_cytokines", engine="openpyxl")
         cytokine_info.to_excel(local_path, sheet_name="all_cytokines")
     else:
-        print(f"Loading from: {local_path}")
+        logger.info("Loading from: %s", local_path)
         cytokine_info = pd.read_excel(local_path)
 
     return cytokine_info
@@ -209,7 +213,7 @@ def load_CIP_signatures(save_dir="", force_download=False) -> pd.DataFrame:
         CIP_signatures = pd.read_csv(local_path, index_col=0)
         CIP_signatures.to_csv(local_path, index=False)
     else:
-        print(f"Loading from: {local_path}")
+        logger.info("Loading from: %s", local_path)
         CIP_signatures = pd.read_csv(local_path, index_col=0)
 
     return CIP_signatures

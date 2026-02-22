@@ -1,9 +1,12 @@
+import logging
 import warnings
 
 import numpy as np
 import pandas as pd
 from IPython.display import display
 from tqdm.auto import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 def _check_robustness_fractions(
@@ -199,7 +202,7 @@ def get_robust_significant_results(
 
     # if none of the results in the df pass the filter, exit out and don't return anything.
     if results_robust.empty:
-        print("No robust results to process. Exiting function.")
+        logger.warning("No robust results to process. Exiting function.")
         return
 
     results_robust = (
@@ -248,7 +251,7 @@ def get_robust_significant_results(
 
     if display_df_nicely:
         for contrast in robust_results_dict.keys():
-            print(f"Contrast:{contrast}")
+            logger.info("Contrast: %s", contrast)
             display(robust_results_dict[contrast][0])
 
     return robust_results_dict

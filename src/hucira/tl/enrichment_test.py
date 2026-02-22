@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 import gseapy as gp
@@ -5,10 +6,7 @@ import numpy as np
 import pandas as pd
 from anndata import AnnData
 
-
-def _vprint(msg, verbose) -> None:
-    if verbose:
-        print(msg)
+logger = logging.getLogger(__name__)
 
 
 def _get_genesets(
@@ -41,7 +39,7 @@ def _get_genesets(
 
     # Construct signature gene set if input is human cytokine dictionary
     if set(required_for_hcd).issubset(df.columns):
-        print(f"Computing gene sets of Human Cytokine Dictionary for {celltype_signature}.")
+        logger.info("Computing gene sets of Human Cytokine Dictionary for %s.", celltype_signature)
         select = (df.adj_p_value <= threshold_pval) & (df.celltype == celltype_signature)
         if direction == "upregulated":
             select = select & (df.log_fc >= threshold_lfc)
@@ -66,7 +64,7 @@ def _get_genesets(
 
     # Construct signature gene set if input is CIP signatures
     elif set(required_for_CIP).issubset(df.columns):
-        print(f"Computing gene sets of Cytokine-induced gene programs for {celltype_signature}.")
+        logger.info("Computing gene sets of Cytokine-induced gene programs for %s.", celltype_signature)
         select = df.celltype == celltype_signature
         df = df.loc[select]
         gene_set_dict = {}
@@ -82,7 +80,7 @@ def _get_genesets(
 
     # Construct signature gene set for custom gene programs
     elif "query_program" in df.columns:
-        print(f"Computing gene sets of user-defined gene programs for {celltype_signature}.")
+        logger.info("Computing gene sets of user-defined gene programs for %s.", celltype_signature)
         select = df.celltype == celltype_signature
         df = df.loc[select]
         gene_set_dict = {}
@@ -150,7 +148,7 @@ def _compute_s2n(
         sigma2 = np.std(X2, axis=0, ddof=1)
 
     else:
-        _vprint("Using precomputed stats", True)
+        logger.debug("Using precomputed stats")
         num_cells_1 = precomputed_stats[condition_1]["num_cells"]
         num_cells_2 = precomputed_stats[condition_2]["num_cells"]
         mu1 = precomputed_stats[condition_1]["mu"]
@@ -284,23 +282,25 @@ def run_one_enrichment_test(
 
     # allows potential loop of celltype combos to continue
     if celltype_adata not in adata.obs[celltype_column].unique():
-        print(
-            f"'{celltype_adata}' is not present in celltype_column ({celltype_column}) of query adata. Skipping enrichment test of this celltype.\n"
+        logger.warning(
+            "'%s' is not present in celltype_column (%s) of query adata. Skipping enrichment test of this celltype.",
+            celltype_adata,
+            celltype_column,
         )
         return None
 
     # filter for cell type
-    _vprint("Filter for cell type:", verbose)
+    logger.debug("Filter for cell type:")
     adata = adata[adata.obs[celltype_column] == celltype_adata]
-    _vprint("Filter for cell type: done.", verbose)
+    logger.debug("Filter for cell type: done.")
 
     # filter based on gene expression
-    _vprint("Filter for gene expression:", verbose)
+    logger.debug("Filter for gene expression:")
     adata = adata[:, adata.X.mean(axis=0) >= threshold_expression]
-    _vprint("Filter for gene expression: done.", verbose)
+    logger.debug("Filter for gene expression: done.")
 
     # get genesets
-    _vprint("Get gene sets:", verbose)
+    logger.debug("Get gene sets:")
     gene_set_dict, gene_set_df = _get_genesets(
         adata=adata,
         df=df,
@@ -310,18 +310,18 @@ def run_one_enrichment_test(
         threshold_lfc=threshold_lfc,
     )
 
-    _vprint("Get gene sets: done.", verbose)
+    logger.debug("Get gene sets: done.")
 
     # compute ranking stat
-    _vprint("Get ranking stats:", verbose)
+    logger.debug("Get ranking stats:")
     rnk_stats, num_cells_per_condition = _compute_ranking_statistic(
         adata, contrast_column=contrast_column, contrasts_combo=contrasts_combo
     )
-    _vprint("Get ranking stats: done.", verbose)
+    logger.debug("Get ranking stats: done.")
     results = []
 
     for contrast_name in rnk_stats.columns:
-        print(contrast_name)
+        logger.info("Running enrichment for contrast: %s", contrast_name)
         # format stat so that it can be processed be gseapy
         rnk = (
             rnk_stats.loc[:, contrast_name]
@@ -352,7 +352,7 @@ def run_one_enrichment_test(
         _res.loc[:, "num_cells_2"] = num_cells_per_condition.loc[contrast_name, "num_cells_2"]
         _res.loc[:, "percent_duplicate_ranking_stats"] = (rnk.duplicated(keep="first").sum() / rnk.shape[0]) * 100
         results.append(_res)
-        _vprint(f"{contrast_name}: done.", verbose)
+        logger.debug("%s: done.", contrast_name)
 
     # combine results and save hyperparams
     results = pd.concat(results, axis=0, ignore_index=True)
@@ -410,7 +410,7 @@ def run_all_enrichment_test(
     """Compute cytokine enrichment across multiple threshold values for robustness.
 
     Wrapper around :func:`run_one_enrichment_test` that loops through several
-    threshold values to obtain more robust gene sets.
+    threshold values to obtain more robust results.
 
     Parameters
     ----------

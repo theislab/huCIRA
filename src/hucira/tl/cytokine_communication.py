@@ -1,3 +1,4 @@
+import logging
 import re
 import warnings
 
@@ -5,6 +6,8 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
+
+logger = logging.getLogger(__name__)
 
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
@@ -20,10 +23,14 @@ def _get_senders(
     mask = np.isin(genes, adata.var_names)
 
     if not mask.any():
-        print(f"None of the cytokine producing genes ({genes}) were found in dataset for cytokine {cytokine}.")
+        logger.warning(
+            "None of the cytokine producing genes (%s) were found in dataset for cytokine %s.", genes, cytokine
+        )
         return None
     if not mask.all():
-        print(f"The following cytokine producing genes were not found in the dataset and are excluded: {genes[~mask]}")
+        logger.warning(
+            "The following cytokine producing genes were not found in the dataset and are excluded: %s", genes[~mask]
+        )
         genes = genes[mask]
     adata = adata[:, genes]
 
@@ -102,7 +109,7 @@ def _get_receivers(
     # get receptor genes for this cytokine
     _receptor_genes = cytokine_info.loc[cytokine_info.name == cytokine, "receptor gene"]
     if _receptor_genes.isna().all():
-        print(f"No receptor gene found in cytokine_info for cytokine: {cytokine}")
+        logger.warning("No receptor gene found in cytokine_info for cytokine: %s", cytokine)
         return None
     assert len(_receptor_genes) == 1, _receptor_genes
     _receptor_genes = _receptor_genes.values[0]
@@ -111,15 +118,16 @@ def _get_receivers(
     results_mean, results_frac = [], []
     # each receptor may require the expression of multiple genes
     for candidate in candidates:
-        # print(candidate)
         genes = np.array(re.split(", ", candidate))
         mask = np.isin(genes, adata.var_names)
         if not mask.any():
-            print(f"None of the cytokine receptor genes ({genes}) were found in dataset for cytokine {cytokine}.")
+            logger.warning(
+                "None of the cytokine receptor genes (%s) were found in dataset for cytokine %s.", genes, cytokine
+            )
             continue
         if not mask.all():
-            print(
-                f"The following cytokine receptor genes were not found in the dataset and are excluded: {genes[~mask]}"
+            logger.warning(
+                "The following cytokine receptor genes were not found in the dataset and are excluded: %s", genes[~mask]
             )
             genes = genes[mask]
         X_df = adata[:, genes].to_df()
