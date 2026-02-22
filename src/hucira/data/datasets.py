@@ -1,3 +1,4 @@
+import contextlib
 import os
 
 import pandas as pd
@@ -5,6 +6,21 @@ import requests
 import requests_cache
 import scanpy as sc
 from anndata import AnnData
+from tqdm.auto import tqdm
+
+
+def _download_file(url: str, local_path: str, description: str, disable_cache: bool = False) -> None:
+    """Download a file with a tqdm progress bar."""
+    ctx = requests_cache.disabled() if disable_cache else contextlib.nullcontext()
+    with ctx:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            total_size = int(r.headers.get("content-length", 0))
+            with tqdm(total=total_size, unit="B", unit_scale=True, desc=description) as pbar:
+                with open(local_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                        pbar.update(len(chunk))
 
 
 def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_biased_genes=True) -> pd.DataFrame:
@@ -35,8 +51,8 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
     local_path = os.path.join(save_dir, "human_cytokine_dict.csv")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Human Cytokine Dictionary from Parse Biosciences...")
-        cytokine_dict = pd.read_csv(url, index_col=0)
+        _download_file(url, local_path, "Human Cytokine Dictionary")
+        cytokine_dict = pd.read_csv(local_path, index_col=0)
         cytokine_dict = cytokine_dict.reset_index(drop=True)
         cytokine_dict.to_csv(local_path)
     else:
@@ -83,17 +99,7 @@ def load_MS_CSF_data(save_dir="", force_download=False) -> AnnData:
 
     # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
-        print("Downloading MS dataset from figshare...")
-
-        with requests_cache.disabled():  # ← THIS is the key
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()
-                with open(local_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            f.write(chunk)
-
-        print(f"Download complete: {local_path}")
+        _download_file(url, local_path, "MS dataset (figshare)", disable_cache=True)
     else:
         print(f"Loading from: {local_path}")
 
@@ -127,13 +133,7 @@ def load_Lupus_data(save_dir="", force_download=False) -> AnnData:
 
     # Download only if not already in directory
     if force_download or not os.path.exists(local_path):
-        print("Downloading lupus dataset from CELLxGENE...")
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(local_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-        print(f"Download complete: {local_path}")
+        _download_file(url, local_path, "Lupus dataset (CELLxGENE)")
     else:
         print(f"Loading from: {local_path}")
 
@@ -171,8 +171,8 @@ def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
     local_path = os.path.join(save_dir, "cytokine_info.xlsx")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Cytokine Information sheet...")
-        cytokine_info = pd.read_excel(url, sheet_name="all_cytokines", engine="openpyxl")
+        _download_file(url, local_path, "Cytokine Information sheet")
+        cytokine_info = pd.read_excel(local_path, sheet_name="all_cytokines", engine="openpyxl")
         cytokine_info.to_excel(local_path, sheet_name="all_cytokines")
     else:
         print(f"Loading from: {local_path}")
@@ -205,8 +205,8 @@ def load_CIP_signatures(save_dir="", force_download=False) -> pd.DataFrame:
     local_path = os.path.join(save_dir, "CIP_signatures.csv")
 
     if force_download or not os.path.exists(local_path):
-        print("Downloading Cytokine-induced Gene Programs...")
-        CIP_signatures = pd.read_csv(url, index_col=0)
+        _download_file(url, local_path, "CIP signatures")
+        CIP_signatures = pd.read_csv(local_path, index_col=0)
         CIP_signatures.to_csv(local_path, index=False)
     else:
         print(f"Loading from: {local_path}")
