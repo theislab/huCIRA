@@ -194,6 +194,41 @@ def _compute_s2n(
     return stats, num_cells
 
 
+def _compute_log_fold_change(adata: AnnData, contrast_column: str, condition_1: str, condition_2: str) -> pd.DataFrame:
+    """Compute the log2 fold change for each gene between two conditions.
+
+    Can be passed as ``ranking_statistic_fn`` to
+    :func:`run_one_enrichment_test` or :func:`run_all_enrichment_test`.
+
+    Parameters
+    ----------
+    adata : AnnData
+        AnnData object with gene expression data.
+    contrast_column : str
+        Key in ``adata.obs`` indicating condition labels.
+    condition_1 : str
+        Name of the first condition (numerator).
+    condition_2 : str
+        Name of the second condition (denominator).
+
+    Returns
+    -------
+    pandas.DataFrame
+        Log2 fold change values indexed by gene names.
+    """
+    group1 = adata[adata.obs[contrast_column] == condition_1]
+    group2 = adata[adata.obs[contrast_column] == condition_2]
+
+    # np.mean on sparse matrices returns np.matrix; flatten to 1-D array
+    mu1 = np.asarray(group1.X.mean(axis=0)).ravel()
+    mu2 = np.asarray(group2.X.mean(axis=0)).ravel()
+
+    # Add pseudocount to avoid log(0)
+    log2fc = np.log2(mu1 + 1e-9) - np.log2(mu2 + 1e-9)
+
+    return pd.DataFrame(log2fc, index=adata.var_names, columns=[f"{condition_1}_vs_{condition_2}"])
+
+
 def _compute_num_cells(adata: AnnData, contrast_column: str, condition_1: str, condition_2: str) -> pd.DataFrame:
     num_cells_1 = (adata.obs[contrast_column] == condition_1).sum()
     num_cells_2 = (adata.obs[contrast_column] == condition_2).sum()
@@ -210,6 +245,9 @@ def _compute_ranking_statistic(
     contrasts_combo: list[tuple[str, str]],
     ranking_statistic_fn: Callable[..., pd.DataFrame] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    # Deduplicate contrast pairs
+    contrasts_combo = list(dict.fromkeys(contrasts_combo))
+
     rnk_stats, num_cells = [], []
 
     if ranking_statistic_fn is not None:
