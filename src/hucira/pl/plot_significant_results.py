@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def _format_cytokine_names(x):
+def _format_cytokine_names(x) -> str | list[str]:
     if isinstance(x, (list, np.ndarray, pd.Index)):
         return [_format_cytokine_names(_x) for _x in x]
     text = x.get_text() if hasattr(x, "get_text") else x
@@ -29,7 +29,7 @@ def plot_significant_results(
     fig_path: str = "",
     fig_width: float = 10.0,
     fig_height: float = 12.0,
-):
+) -> None:
     """Plot a heatmap of robust enrichment results.
 
     Plots either the robust results from a dict of contrasts or individually
@@ -75,7 +75,7 @@ def plot_significant_results(
             if selected_cytokines:
                 pivot = pivot.loc[selected_cytokines]
                 annot = annot.loc[selected_cytokines]
-                
+
             fig, ax = plt.subplots(figsize=(fig_width, fig_height))
             sns.heatmap(
                 pivot,
@@ -88,11 +88,7 @@ def plot_significant_results(
                 linewidths=0.5,
                 linecolor="white",
                 cbar=True,
-                cbar_kws={
-                    "shrink": 0.5,
-                    "fraction": 0.04,
-                    "pad": 0.02
-                },
+                cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
                 ax=ax,
             )
 
@@ -140,11 +136,7 @@ def plot_significant_results(
             linewidths=0.5,
             linecolor="white",
             cbar=True,
-            cbar_kws={
-                "shrink": 0.5,
-                "fraction": 0.04,
-                "pad": 0.02
-            },
+            cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
             ax=ax,
         )
         ax.set_title("Contrast1_vs_Contrast2", fontsize=10)

@@ -6,7 +6,7 @@ import pandas as pd
 from anndata import AnnData
 
 
-def _vprint(msg, verbose):
+def _vprint(msg, verbose) -> None:
     if verbose:
         print(msg)
 
@@ -19,7 +19,7 @@ def _get_genesets(
     threshold_pval: float | None = None,
     threshold_lfc: float | None = None,
 ) -> tuple[dict[str, list[str]], pd.DataFrame]:
-    '''
+    """
     Get shared gene sets between query adata and the Human Cytokine Dictionary, CIP signatures, or custom gene signatures of a chosen cell type.
 
     Parameters
@@ -35,10 +35,10 @@ def _get_genesets(
     -------
     - gene_set_dict: dictionary with cytokine/CIP as key and associated genes as values
     - gene_set_df: df containing information on gene overlap between query data and gene program for chosen cell type
-    '''
+    """
     required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
     required_for_CIP = ["gene", "CIP", "celltype"]
-    
+
     # Construct signature gene set if input is human cytokine dictionary
     if set(required_for_hcd).issubset(df.columns):
         print(f"Computing gene sets of Human Cytokine Dictionary for {celltype_signature}.")
@@ -52,7 +52,7 @@ def _get_genesets(
         else:
             raise ValueError(f"Invalid direction: {direction}.")
         df = df.loc[select]
-        
+
         gene_set_dict = {}
         gene_set_df = pd.DataFrame()
         for cytokine_i, cytokine in enumerate(df.cytokine.unique()):
@@ -67,7 +67,7 @@ def _get_genesets(
     # Construct signature gene set if input is CIP signatures
     elif set(required_for_CIP).issubset(df.columns):
         print(f"Computing gene sets of Cytokine-induced gene programs for {celltype_signature}.")
-        select = (df.celltype == celltype_signature)
+        select = df.celltype == celltype_signature
         df = df.loc[select]
         gene_set_dict = {}
         gene_set_df = pd.DataFrame()
@@ -79,11 +79,11 @@ def _get_genesets(
             gene_set_df.loc[CIP_i, "num_shared_genes_signature"] = len(gene_set_shared)
             gene_set_df.loc[CIP_i, "frac_shared_genes_signature"] = len(gene_set_shared) / len(gene_set)
             gene_set_dict[CIP] = gene_set_shared
-            
+
     # Construct signature gene set for custom gene programs
     elif "query_program" in df.columns:
         print(f"Computing gene sets of user-defined gene programs for {celltype_signature}.")
-        select = (df.celltype == celltype_signature)
+        select = df.celltype == celltype_signature
         df = df.loc[select]
         gene_set_dict = {}
         gene_set_df = pd.DataFrame()
@@ -97,16 +97,14 @@ def _get_genesets(
             gene_set_dict[query_program] = gene_set_shared
 
     else:
-        raise ValueError("invalid input for df parameter. You can use either the Human Cytokine Dictionary with load_human_cytokine_dict(), or our CIP signatures with load_CIP_signatures(). If you want to compute enrichment of custom gene sets, df must have columns: ['gene', 'query_program', 'celltype'].")
-        return 
+        raise ValueError(
+            "invalid input for df parameter. You can use either the Human Cytokine Dictionary with load_human_cytokine_dict(), or our CIP signatures with load_CIP_signatures(). If you want to compute enrichment of custom gene sets, df must have columns: ['gene', 'query_program', 'celltype']."
+        )
+        return
     return gene_set_dict, gene_set_df
 
 
-def _compute_mu_and_sigma(
-    adata: AnnData, 
-    contrast_column: str, 
-    condition: str
-) -> pd.DataFrame:
+def _compute_mu_and_sigma(adata: AnnData, contrast_column: str, condition: str) -> dict:
     group = adata[adata.obs[contrast_column] == condition]
     num_cells = group.shape[0]
     X = group.X.toarray() if hasattr(group.X, "toarray") else group.X
@@ -116,11 +114,7 @@ def _compute_mu_and_sigma(
 
 
 def _compute_s2n(
-    adata: AnnData, 
-    contrast_column: str, 
-    condition_1: str, 
-    condition_2: str, 
-    precomputed_stats: dict | None = None
+    adata: AnnData, contrast_column: str, condition_1: str, condition_2: str, precomputed_stats: dict | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Compute the signal-to-noise ratio (S2N) for each gene between two conditions in an AnnData object.
@@ -178,9 +172,7 @@ def _compute_s2n(
 
 
 def _compute_ranking_statistic(
-    adata: AnnData, 
-    contrast_column: str, 
-    contrasts_combo: list[tuple[str, str]]
+    adata: AnnData, contrast_column: str, contrasts_combo: list[tuple[str, str]]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     rnk_stats, num_cells = [], []
     precomputed_stats = {}
@@ -228,7 +220,7 @@ def run_one_enrichment_test(
     seed: int = 2025,
     verbose: bool = False,
     threads: int = 6,
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """Compute cytokine enrichment activity in one cell type using GSEA scoring.
 
     1. "Looks up" query cell type in human cytokine dictionary and retrieves
@@ -377,18 +369,18 @@ def run_one_enrichment_test(
     results.loc[:, "weight"] = weight
     results.loc[:, "seed"] = seed
     results.loc[:, "threads"] = threads
-    
+
     required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
     if set(required_for_hcd).issubset(df.columns):
         results.rename({"Term": "cytokine"}, inplace=True, axis=1)
-        results = pd.merge(results, gene_set_df, on="cytokine")        
-    elif "CIP" in df.columns: 
+        results = pd.merge(results, gene_set_df, on="cytokine")
+    elif "CIP" in df.columns:
         results.rename({"Term": "CIP"}, inplace=True, axis=1)
         results = pd.merge(results, gene_set_df, on="CIP")
         results.direction = "upregulated"
     elif "query_program" in df.columns:
         results.rename({"Term": "query_program"}, inplace=True, axis=1)
-        results = pd.merge(results, gene_set_df, on="query_program")  
+        results = pd.merge(results, gene_set_df, on="query_program")
         results.direction = "custom input"
 
     return results

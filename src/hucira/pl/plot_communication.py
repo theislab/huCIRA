@@ -1,4 +1,3 @@
-import re
 import warnings
 
 import matplotlib.lines as mlines
@@ -9,6 +8,7 @@ from bokeh.palettes import all_palettes
 from pycirclize import Circos
 
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+
 
 def plot_communication(
     df_src: pd.DataFrame,
@@ -28,7 +28,7 @@ def plot_communication(
     fontsize: int = 6,
     loc: str = "upper left",
     bbox_to_anchor: tuple[float, float] = (1, 1),
-):
+) -> tuple[list[mlines.Line2D], list[str]]:
     """Generates a Circos plot to visualize cell-cell communication based on cytokine producers and receivers.
 
     The function filters the input dataframes based on thresholds for fraction of expressing cells
@@ -121,7 +121,7 @@ def plot_communication(
 
     if cytokine2color is None:
         cytokine_colors = all_palettes["Colorblind"][max(3, len(unique_cytokines))]
-        cytokine_colors = cytokine_colors[:len(unique_cytokines)] # in case there are less than 3 unique cytokines
+        cytokine_colors = cytokine_colors[: len(unique_cytokines)]  # in case there are less than 3 unique cytokines
         # cytokine_colors = all_palettes["Set3"][max(3, len(unique_cytokines))]
         cytokine2color = dict(zip(unique_cytokines, cytokine_colors, strict=True))
 
