@@ -13,7 +13,7 @@ def _get_genesets(
     adata: AnnData,
     df: pd.DataFrame,
     celltype_signature: str,
-    direction: Literal["upregulated", "downregulated", "both"] | None = None,
+    direction: Literal["upregulated", "downregulated", "both"],
     threshold_pval: float | None = None,
     threshold_lfc: float | None = None,
 ) -> tuple[dict[str, list[str]], pd.DataFrame]:
@@ -225,11 +225,11 @@ def _compute_ranking_statistic(
 def run_one_enrichment_test(
     adata: AnnData,
     df: pd.DataFrame,
-    celltype_combo: tuple[str, str] = ("B cell", "B_cell"),
-    celltype_column: str = "cell_type",
-    contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
-    contrast_column: str = "disease_state",
-    direction: Literal["upregulated", "downregulated", "both"] = "upregulated",
+    celltype_combo: tuple[str, str],
+    contrasts_combo: tuple[str, str] | list[tuple[str, str]],
+    celltype_column: str,
+    contrast_column: str,
+    direction: Literal["upregulated", "downregulated"] = "upregulated",
     # Filtering parameters for gene set construction
     threshold_lfc: float = 1.0,
     threshold_expression: float = 0.0,
@@ -413,11 +413,11 @@ def run_one_enrichment_test(
 def run_all_enrichment_test(
     adata: AnnData,
     df: pd.DataFrame,
-    celltype_combos: list[tuple[str, str]] = None,
-    celltype_column: str = "cell_type",
-    contrasts_combo: tuple[str, str] | list[tuple[str, str]] = None,
-    contrast_column: str = "disease_state",
-    direction: Literal["upregulated", "downregulated", "both"] = "upregulated",
+    celltype_combos: list[tuple[str, str]],
+    celltype_column: str,
+    contrasts_combo: tuple[str, str] | list[tuple[str, str]],
+    contrast_column: str,
+    direction: Literal["upregulated", "downregulated"] = "upregulated",
     # Filtering parameters for gene set construction
     threshold_lfc: float | list[float] = 1.0,
     threshold_expression: float | list[float] = 0.0,

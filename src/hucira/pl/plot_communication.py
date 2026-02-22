@@ -6,7 +6,7 @@ import pandas as pd
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
-def _check_plot_deps():
+def _check_plot_deps() -> None:
     """Raise an informative error when optional plotting dependencies are missing."""
     missing = []
     try:

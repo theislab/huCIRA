@@ -7,7 +7,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def _check_plot_deps():
+def _check_plot_deps() -> None:
     """Raise an informative error when optional plotting dependencies are missing."""
     missing = []
     try:
@@ -25,7 +25,7 @@ def _check_plot_deps():
         )
 
 
-def _format_cytokine_names(x) -> str | list[str]:
+def _format_cytokine_names(x: str | list | np.ndarray | pd.Index) -> str | list[str]:
     if isinstance(x, (list, np.ndarray, pd.Index)):
         return [_format_cytokine_names(_x) for _x in x]
     text = x.get_text() if hasattr(x, "get_text") else x

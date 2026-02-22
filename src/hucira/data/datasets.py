@@ -27,7 +27,9 @@ def _download_file(url: str, local_path: str, description: str, disable_cache: b
                         pbar.update(len(chunk))
 
 
-def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_biased_genes=True) -> pd.DataFrame:
+def load_human_cytokine_dict(
+    save_dir: str = "", force_download: bool = False, exclude_well_biased_genes: bool = True
+) -> pd.DataFrame:
     """Download and load the Human Cytokine Dictionary.
 
     Source: https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/
@@ -74,7 +76,7 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
     return cytokine_dict
 
 
-def load_multiple_sclerosis_data(save_dir="", force_download=False) -> AnnData:
+def load_multiple_sclerosis_data(save_dir: str = "", force_download: bool = False) -> AnnData:
     """Download and load the multiple sclerosis dataset.
 
     Reference: Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset.
@@ -110,7 +112,7 @@ def load_multiple_sclerosis_data(save_dir="", force_download=False) -> AnnData:
     return sc.read_h5ad(local_path)
 
 
-def load_lupus_data(save_dir="", force_download=False) -> AnnData:
+def load_lupus_data(save_dir: str = "", force_download: bool = False) -> AnnData:
     """Download and load the lupus dataset from CELLxGENE.
 
     Reference: Perez et al., Single-cell RNA-seq reveals cell
@@ -145,7 +147,7 @@ def load_lupus_data(save_dir="", force_download=False) -> AnnData:
     return sc.read_h5ad(local_path)
 
 
-def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
+def load_cytokine_info(save_dir: str = "", force_download: bool = False) -> pd.DataFrame:
     """Download and load the cytokine information sheet.
 
     The information sheet includes sender and receptor genes used for the
@@ -186,7 +188,7 @@ def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
     return cytokine_info
 
 
-def load_CIP_signatures(save_dir="", force_download=False) -> pd.DataFrame:
+def load_CIP_signatures(save_dir: str = "", force_download: bool = False) -> pd.DataFrame:
     """Download and load CIP (cytokine-induced program) signatures.
 
     Parameters

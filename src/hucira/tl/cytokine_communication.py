@@ -15,10 +15,9 @@ warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 def _get_senders(
     adata: AnnData,
     cytokine_info: pd.DataFrame,
-    cytokine: str = "IL-32-beta",
-    show: bool = False,
+    cytokine: str,
     column_cell_type: str = "cell_type",
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     genes = np.unique(re.split(", ", cytokine_info.loc[cytokine_info.name == cytokine, "gene"].values[0]))
     mask = np.isin(genes, adata.var_names)
 
@@ -205,7 +204,7 @@ def get_one_senders_and_receivers(
 def get_all_senders_and_receivers(
     adata: AnnData,
     cytokine_info: pd.DataFrame,
-    cytokine_list: list = None,
+    cytokine_list: list[str],
     celltype_colname: str = "cell_type",
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
@@ -221,7 +220,7 @@ def get_all_senders_and_receivers(
     cytokine_info : pandas.DataFrame
         Cytokine metadata containing receptor gene information, with columns
         ``"name"``, ``"gene"``, and ``"receptor gene"``.
-    cytokine_list : list of str or None
+    cytokine_list : list of str
         List of cytokines to analyse. Should be present in ``cytokine_info``.
     celltype_colname : str
         Column name in ``adata.obs`` that stores cell types.
@@ -244,8 +243,8 @@ def get_all_senders_and_receivers(
             cytokine_info=cytokine_info,
             cytokine=cytokine,
             celltype_colname=celltype_colname,
-            sender_pvalue_threshold=0.1,
-            receiver_mean_X_threshold=0,
+            sender_pvalue_threshold=sender_pvalue_threshold,
+            receiver_mean_X_threshold=receiver_mean_X_threshold,
         )
 
         if cytokine == "IL-32-beta":
