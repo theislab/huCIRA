@@ -157,29 +157,34 @@ def get_one_senders_and_receivers(
     receiver_mean_X_threshold: float = 0,
     sender_lfc_threshold: float = 0,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for one cytokine.
+    """Compute cytokine sender and receiver statistics for one cytokine.
 
-    Best for exploration purposes of a singular cytokine.
+    Best for exploration purposes of a single cytokine.
 
     Parameters
     ----------
     adata : AnnData
-        Query adata object of analysis
-    cytokine_info : pd.DataFrame
-        External file containing info about receptor genes of each cytokine in format
-        pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
+        Query AnnData object.
+    cytokine_info : pandas.DataFrame
+        Cytokine metadata containing receptor gene information, with columns
+        ``"name"``, ``"gene"``, and ``"receptor gene"``.
     cytokine : str
-        A cytokine, which ideally should be present in robust_results
-        (the outcome of the robust enrichment analysis)
-    celltype_colname : str, default "cell_type"
-        Column name of where cell types are stored in adata
+        Cytokine name to analyse. Should be present in ``cytokine_info``.
+    celltype_colname : str
+        Column name in ``adata.obs`` that stores cell types.
+    sender_pvalue_threshold : float
+        Maximum p-value for a cell type to be considered a sender.
+    receiver_mean_X_threshold : float
+        Minimum mean expression for a cell type to be considered a receiver.
+    sender_lfc_threshold : float
+        Minimum log-fold change for a cell type to be considered a sender.
 
     Returns
     -------
-    df_senders : pd.DataFrame
-        Cytokine signal senders per cell type
-    df_receivers : pd.DataFrame
-        Cytokine signal receivers per cell type
+    df_senders : pandas.DataFrame
+        Cytokine signal senders per cell type.
+    df_receivers : pandas.DataFrame
+        Cytokine signal receivers per cell type.
     """
     df_senders = _get_senders(
         adata=adata, cytokine_info=cytokine_info, cytokine=cytokine, column_cell_type=celltype_colname
@@ -205,29 +210,32 @@ def get_all_senders_and_receivers(
     sender_pvalue_threshold: float = 0.1,
     receiver_mean_X_threshold: float = 0,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Generates cytokine producer and receiver statistics (senders and receivers of cell-cell communication) for a list of cytokines.
+    """Compute cytokine sender and receiver statistics for a list of cytokines.
 
-    Best for visualization purposes (for plot_communication function).
+    Best for visualization purposes (for :func:`~hucira.plot_communication`).
 
     Parameters
     ----------
     adata : AnnData
-        Query adata object of analysis
-    cytokine_info : pd.DataFrame
-        External file containing info about receptor genes of each cytokine in format
-        pd.DataFrame({"name": cytokine, "receptor gene": [gene1, gene2]})
-    cytokine_list : list, optional
-        List of cytokines, which ideally should be present in robust_results
-        (the outcome of the robust enrichment analysis). Default is None.
-    celltype_colname : str, default "cell_type"
-        Column name of where cell types are stored in adata
+        Query AnnData object.
+    cytokine_info : pandas.DataFrame
+        Cytokine metadata containing receptor gene information, with columns
+        ``"name"``, ``"gene"``, and ``"receptor gene"``.
+    cytokine_list : list of str or None
+        List of cytokines to analyse. Should be present in ``cytokine_info``.
+    celltype_colname : str
+        Column name in ``adata.obs`` that stores cell types.
+    sender_pvalue_threshold : float
+        Maximum p-value for a cell type to be considered a sender.
+    receiver_mean_X_threshold : float
+        Minimum mean expression for a cell type to be considered a receiver.
 
     Returns
     -------
-    df_src : pd.DataFrame
-        All cytokine signal senders
-    df_tgt : pd.DataFrame
-        All cytokine signal receivers
+    df_src : pandas.DataFrame
+        All cytokine signal senders.
+    df_tgt : pandas.DataFrame
+        All cytokine signal receivers.
     """
     senders, receivers = [], []
     for cytokine in cytokine_list:

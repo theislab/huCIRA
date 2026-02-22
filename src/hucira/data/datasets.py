@@ -28,8 +28,7 @@ def _download_file(url: str, local_path: str, description: str, disable_cache: b
 
 
 def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_biased_genes=True) -> pd.DataFrame:
-    """
-    Download and load our Human Cytokine Dictionary from Parse Biosciences:
+    """Download and load the Human Cytokine Dictionary.
 
     Source: https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/
 
@@ -38,15 +37,15 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
     save_dir : str
         Directory where the file will be saved.
     force_download : bool
-        Allows user to force a fresh download
+        Allows user to force a fresh download.
     exclude_well_biased_genes : bool
-        If True, exclude genes that are well biased according to out analysis in the original publication.
-
+        If True, exclude genes that are well biased according to our
+        analysis in the original publication.
 
     Returns
     -------
     cytokine_dict : pandas.DataFrame
-        Human Cytokine Dictionary adata object.
+        Human Cytokine Dictionary as a DataFrame.
     """
     url = "https://cdn.parsebiosciences.com/gigalab/10m/DEGs.csv"
     if save_dir == "":
@@ -75,23 +74,23 @@ def load_human_cytokine_dict(save_dir="", force_download=False, exclude_well_bia
     return cytokine_dict
 
 
-def load_MS_CSF_data(save_dir="", force_download=False) -> AnnData:
-    """
-    Download and load the MS dataset automatically.
+def load_multiple_sclerosis_data(save_dir="", force_download=False) -> AnnData:
+    """Download and load the multiple sclerosis dataset.
 
-    Reference: Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset. https://doi.org/10.6084/m9.figshare.14356661.v1
+    Reference: Xu, Chenling (2021). MS_CSF.h5ad. figshare. Dataset.
+    https://doi.org/10.6084/m9.figshare.14356661.v1
 
     Parameters
     ----------
     save_dir : str
         Directory where the file will be saved.
     force_download : bool
-        Allows user to force a fresh download from CellxGene
+        Allows user to force a fresh download from figshare.
 
     Returns
     -------
     adata : AnnData
-        MS adata object.
+        Multiple sclerosis AnnData object.
     """
     url = "https://ndownloader.figshare.com/files/27405182"
 
@@ -111,23 +110,24 @@ def load_MS_CSF_data(save_dir="", force_download=False) -> AnnData:
     return sc.read_h5ad(local_path)
 
 
-def load_Lupus_data(save_dir="", force_download=False) -> AnnData:
-    """
-    Download and load the lupus dataset from CELLxGENE automatically.
+def load_lupus_data(save_dir="", force_download=False) -> AnnData:
+    """Download and load the lupus dataset from CELLxGENE.
 
-    Reference: Richard K. Perez et al. ,Single-cell RNA-seq reveals cell type–specific molecular and genetic associations to lupus.Science376,eabf1970(2022).DOI:10.1126/science.abf1970
+    Reference: Perez et al., Single-cell RNA-seq reveals cell
+    type-specific molecular and genetic associations to lupus.
+    Science 376, eabf1970 (2022). DOI:10.1126/science.abf1970
 
     Parameters
     ----------
     save_dir : str
         Directory where the file will be saved.
     force_download : bool
-        Allows user to force a fresh download from CellxGene
+        Allows user to force a fresh download from CellxGene.
 
     Returns
     -------
     adata : AnnData
-        Lupus adata object.
+        Lupus AnnData object.
     """
     url = "https://datasets.cellxgene.cziscience.com/4118e166-34f5-4c1f-9eed-c64b90a3dace.h5ad"
     if save_dir == "":
@@ -146,21 +146,22 @@ def load_Lupus_data(save_dir="", force_download=False) -> AnnData:
 
 
 def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
-    """
-    Download and load Cytokine information sheet.
+    """Download and load the cytokine information sheet.
 
-    The information sheet includes information about sender and receptor genes (for cell-cell communication plot).
+    The information sheet includes sender and receptor genes used for the
+    cell-cell communication plot.
 
     Parameters
     ----------
     save_dir : str
         Directory where the file will be saved.
     force_download : bool
-        Allows user to force a fresh download
+        Allows user to force a fresh download.
 
     Returns
     -------
     cytokine_info : pandas.DataFrame
+        Cytokine information including sender and receptor genes.
     """
     url = (
         "https://raw.githubusercontent.com/theislab/huCIRA/"
@@ -186,21 +187,19 @@ def load_cytokine_info(save_dir="", force_download=False) -> pd.DataFrame:
 
 
 def load_CIP_signatures(save_dir="", force_download=False) -> pd.DataFrame:
-    """
-    Download and load metadata file (sheet "13.CIP_activations") from supplemental data.
-
-    This file contains information about CIPs (cytokine induced gene programs).
+    """Download and load CIP (cytokine-induced program) signatures.
 
     Parameters
     ----------
     save_dir : str
         Directory where the file will be saved.
     force_download : bool
-        Allows user to force a fresh download
+        Allows user to force a fresh download.
 
     Returns
     -------
     CIP_signatures : pandas.DataFrame
+        DataFrame containing CIP gene sets.
     """
     url = "https://raw.githubusercontent.com/theislab/huCIRA/main/src/hucira/data/df_cips_genesets.csv"
     if save_dir == "":

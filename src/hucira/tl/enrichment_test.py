@@ -17,22 +17,37 @@ def _get_genesets(
     threshold_pval: float | None = None,
     threshold_lfc: float | None = None,
 ) -> tuple[dict[str, list[str]], pd.DataFrame]:
-    """
-    Get shared gene sets between query adata and the Human Cytokine Dictionary, CIP signatures, or custom gene signatures of a chosen cell type.
+    """Get shared gene sets between query adata and a reference gene-program DataFrame.
+
+    Supports the Human Cytokine Dictionary, CIP signatures, or custom gene
+    signatures for a chosen cell type.
 
     Parameters
     ----------
-    - adata: AnnData object with gene expression data.
-    - df: Either hcd, CIP signature, or a custom dataframe containing columns ["gene", "query_program", "celltype"].
-    - celltype_signature: celltype naming convention needs to match df.celltype
-    - direction: Relevant for hcd, but not for CIP or custom gene program
-    - threshold_pval: Relevant for hcd, but not for CIP or custom gene program
-    - threshold_lfc: Relevant for hcd, but not for CIP or custom gene program
+    adata : AnnData
+        AnnData object with gene expression data.
+    df : pandas.DataFrame
+        Either the Human Cytokine Dictionary, CIP signatures, or a custom
+        DataFrame containing columns ``["gene", "query_program", "celltype"]``.
+    celltype_signature : str
+        Cell-type name matching ``df.celltype``.
+    direction : str or None
+        One of ``"upregulated"``, ``"downregulated"``, or ``"both"``.
+        Only relevant for the Human Cytokine Dictionary.
+    threshold_pval : float or None
+        Maximum adjusted p-value. Only relevant for the Human Cytokine
+        Dictionary.
+    threshold_lfc : float or None
+        Minimum log-fold change. Only relevant for the Human Cytokine
+        Dictionary.
 
     Returns
     -------
-    - gene_set_dict: dictionary with cytokine/CIP as key and associated genes as values
-    - gene_set_df: df containing information on gene overlap between query data and gene program for chosen cell type
+    gene_set_dict : dict
+        Dictionary with cytokine/CIP as key and associated genes as values.
+    gene_set_df : pandas.DataFrame
+        DataFrame with gene overlap information between query data and gene
+        program for the chosen cell type.
     """
     required_for_hcd = ["log_fc", "adj_p_value", "cytokine"]
     required_for_CIP = ["gene", "CIP", "celltype"]
@@ -114,19 +129,28 @@ def _compute_mu_and_sigma(adata: AnnData, contrast_column: str, condition: str) 
 def _compute_s2n(
     adata: AnnData, contrast_column: str, condition_1: str, condition_2: str, precomputed_stats: dict | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Compute the signal-to-noise ratio (S2N) for each gene between two conditions in an AnnData object.
+    """Compute the signal-to-noise ratio (S2N) for each gene between two conditions.
 
     Parameters
     ----------
-    - adata: AnnData object with gene expression data.
-    - contrast_column: Key in `adata.obs` indicating the condition labels (e.g. "disease_state").
-    - condition_1: Name of the first condition (e.g., "flare").
-    - condition_2: Name of the second condition (e.g., "healthy").
+    adata : AnnData
+        AnnData object with gene expression data.
+    contrast_column : str
+        Key in ``adata.obs`` indicating condition labels (e.g. ``"disease_state"``).
+    condition_1 : str
+        Name of the first condition (e.g. ``"flare"``).
+    condition_2 : str
+        Name of the second condition (e.g. ``"healthy"``).
+    precomputed_stats : dict or None
+        Pre-computed per-condition statistics from :func:`_compute_mu_and_sigma`.
+        If provided, avoids recomputing mean and std.
 
     Returns
     -------
-    - s2n_scores: pandas Series of S2N values indexed by gene names.
+    stats : pandas.DataFrame
+        S2N values indexed by gene names.
+    num_cells : pandas.DataFrame
+        Number of cells per condition.
     """
     if precomputed_stats is None:
         # Select cells for each condition

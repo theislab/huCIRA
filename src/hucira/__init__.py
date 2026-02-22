@@ -1,7 +1,13 @@
 import logging
 from importlib.metadata import version
 
-from .data import load_CIP_signatures, load_cytokine_info, load_human_cytokine_dict, load_Lupus_data, load_MS_CSF_data
+from .data import (
+    load_CIP_signatures,
+    load_cytokine_info,
+    load_human_cytokine_dict,
+    load_lupus_data,
+    load_multiple_sclerosis_data,
+)
 from .pl import plot_communication, plot_significant_results
 from .tl import (
     check_robustness,
@@ -18,8 +24,9 @@ logging.getLogger(__name__).addHandler(logging.StreamHandler())
 logging.getLogger(__name__).setLevel(logging.INFO)
 
 __all__ = [
-    "load_cytokine_dict_data",
-    "load_MS_data",
+    "load_human_cytokine_dict",
+    "load_multiple_sclerosis_data",
+    "load_lupus_data",
     "load_cytokine_info",
     "load_CIP_signatures",
     "check_robustness",
