@@ -6,7 +6,7 @@ import pandas as pd
 warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
-def _check_plot_deps():
+def _check_plot_deps() -> None:
     """Raise an informative error when optional plotting dependencies are missing."""
     missing = []
     try:
@@ -47,55 +47,66 @@ def plot_communication(
     loc: str = "upper left",
     bbox_to_anchor: tuple[float, float] = (1, 1),
 ) -> tuple[list, list[str]]:
-    """Generates a Circos plot to visualize cell-cell communication based on cytokine producers and receivers.
+    """Generate a Circos plot of cytokine-mediated cell-cell communication.
 
-    The function filters the input dataframes based on thresholds for fraction of expressing cells
-    and mean cytokine gene expression, then creates a circular layout with cell type partitions
-    and draws directed links representing cytokine communication between producers and receivers.
+    Filters the input DataFrames based on thresholds for fraction of expressing
+    cells and mean cytokine gene expression, then creates a circular layout
+    with cell-type partitions and draws directed links representing cytokine
+    communication between producers and receivers.
 
     Parameters
     ----------
-    df_src : pd.DataFrame
-        DataFrame containing producer cell type and cytokine expression statistics,
-        typically from `_get_expression_stats`. Must have 'celltype', 'cytokine',
-        'mean_cytokine_gene_expression', and 'frac_expressing_cells' columns.
-    df_tgt : pd.DataFrame
-        DataFrame containing receiver cell type and cytokine expression statistics,
-        typically from `_get_expression_stats`. Must have 'celltype', 'cytokine',
-        'mean_cytokine_gene_expression', and 'frac_expressing_cells' columns.
-    frac_expressing_cells_sender : float | None, default 0.05
-        Minimum fraction of cells expressing a cytokine gene for a producer cell type.
-        If None, no filtering is applied.
-    frac_expressing_cells_receiver : float | None, default 0.05
-        Minimum fraction of cells expressing a cytokine gene for a receiver cell type.
-        If None, no filtering is applied.
-    mean_cytokine_gene_expression_sender : float | None, default None
-        Minimum mean expression of a cytokine gene for a producer cell type. If None, no filtering is applied.
-    mean_cytokine_gene_expression_receiver : float | None, default None
-        Minimum mean expression of a cytokine gene for a receiver cell type. If None, no filtering is applied.
-    df_enrichment : pd.DataFrame | None, optional
-        Optional dataframe with enrichment information. Default is None.
-    all_celltypes : list | None, optional
-        List of all cell types. If None, inferred from df_src and df_tgt.
-    cytokine2color : dict | None, optional
-        Optional mapping from cytokine names to colors.
-    celltype2color : dict | None, optional
-        Optional mapping from cell type names to colors.
-    figsize : tuple[float, float], default (5, 5)
-        Figure size for the plot.
-    show_legend : bool, default True
+    df_src : pandas.DataFrame
+        Producer cell-type cytokine expression statistics from
+        :func:`~hucira.get_all_senders_and_receivers`. Must have
+        ``"celltype"``, ``"cytokine"``, ``"mean_X"``, and ``"frac_X"``
+        columns.
+    df_tgt : pandas.DataFrame
+        Receiver cell-type cytokine expression statistics from
+        :func:`~hucira.get_all_senders_and_receivers`. Must have
+        ``"celltype"``, ``"cytokine"``, ``"mean_X"``, and ``"frac_X"``
+        columns.
+    frac_expressing_cells_sender : float or None
+        Minimum fraction of cells expressing the cytokine gene for a
+        producer cell type. If None, no filtering is applied.
+    frac_expressing_cells_receiver : float or None
+        Minimum fraction of cells expressing the cytokine gene for a
+        receiver cell type. If None, no filtering is applied.
+    mean_cytokine_gene_expression_sender : float or None
+        Minimum mean expression for a producer cell type. If None, no
+        filtering is applied.
+    mean_cytokine_gene_expression_receiver : float or None
+        Minimum mean expression for a receiver cell type. If None, no
+        filtering is applied.
+    df_enrichment : pandas.DataFrame or None
+        Optional DataFrame with enrichment information to filter links.
+    all_celltypes : list of str or None
+        List of all cell types. If None, inferred from *df_src* and *df_tgt*.
+    cytokine2color : dict or None
+        Mapping from cytokine names to colors.
+    celltype2color : dict or None
+        Mapping from cell-type names to colors.
+    figsize : tuple of (float, float)
+        Figure size in inches.
+    show_legend : bool
         Whether to show the legend.
-    save_path : str | None, optional
+    save_path : str or None
         Path to save the figure. If None, figure is not saved.
-    lw : float, default 1.0
+    lw : float
         Line width for links.
-    fontsize : int, default 6
+    fontsize : int
         Font size for labels.
-    loc : str, default "upper left"
+    loc : str
         Legend location.
-    bbox_to_anchor : tuple[float, float], default (1, 1)
+    bbox_to_anchor : tuple of (float, float)
         Bounding box anchor for the legend.
 
+    Returns
+    -------
+    legend_handles : list
+        Matplotlib line handles for the legend.
+    legend_labels : list of str
+        Cytokine names corresponding to each legend handle.
     """
     _check_plot_deps()
 
