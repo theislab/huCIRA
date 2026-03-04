@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Callable
 from typing import Literal
 
 import gseapy as gp
@@ -194,91 +193,32 @@ def _compute_s2n(
     return stats, num_cells
 
 
-def _compute_log_fold_change(adata: AnnData, contrast_column: str, condition_1: str, condition_2: str) -> pd.DataFrame:
-    """Compute the log2 fold change for each gene between two conditions.
-
-    Can be passed as ``ranking_statistic_fn`` to
-    :func:`run_one_enrichment_test` or :func:`run_all_enrichment_test`.
-
-    Parameters
-    ----------
-    adata : AnnData
-        AnnData object with gene expression data.
-    contrast_column : str
-        Key in ``adata.obs`` indicating condition labels.
-    condition_1 : str
-        Name of the first condition (numerator).
-    condition_2 : str
-        Name of the second condition (denominator).
-
-    Returns
-    -------
-    pandas.DataFrame
-        Log2 fold change values indexed by gene names.
-    """
-    group1 = adata[adata.obs[contrast_column] == condition_1]
-    group2 = adata[adata.obs[contrast_column] == condition_2]
-
-    # np.mean on sparse matrices returns np.matrix; flatten to 1-D array
-    mu1 = np.asarray(group1.X.mean(axis=0)).ravel()
-    mu2 = np.asarray(group2.X.mean(axis=0)).ravel()
-
-    # Add pseudocount to avoid log(0)
-    log2fc = np.log2(mu1 + 1e-9) - np.log2(mu2 + 1e-9)
-
-    return pd.DataFrame(log2fc, index=adata.var_names, columns=[f"{condition_1}_vs_{condition_2}"])
-
-
-def _compute_num_cells(adata: AnnData, contrast_column: str, condition_1: str, condition_2: str) -> pd.DataFrame:
-    num_cells_1 = (adata.obs[contrast_column] == condition_1).sum()
-    num_cells_2 = (adata.obs[contrast_column] == condition_2).sum()
-    return pd.DataFrame(
-        index=[f"{condition_1}_vs_{condition_2}"],
-        columns=["num_cells_1", "num_cells_2"],
-        data=[[num_cells_1, num_cells_2]],
-    )
-
-
 def _compute_ranking_statistic(
-    adata: AnnData,
-    contrast_column: str,
-    contrasts_combo: list[tuple[str, str]],
-    ranking_statistic_fn: Callable[..., pd.DataFrame] | None = None,
+    adata: AnnData, contrast_column: str, contrasts_combo: list[tuple[str, str]]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Deduplicate contrast pairs
-    contrasts_combo = list(dict.fromkeys(contrasts_combo))
-
     rnk_stats, num_cells = [], []
+    precomputed_stats = {}
 
-    if ranking_statistic_fn is not None:
-        for condition_1, condition_2 in contrasts_combo:
-            _rnk_stats = ranking_statistic_fn(adata, contrast_column, condition_1, condition_2)
-            _num_cells = _compute_num_cells(adata, contrast_column, condition_1, condition_2)
-            rnk_stats.append(_rnk_stats)
-            num_cells.append(_num_cells)
-    else:
-        precomputed_stats = {}
-        conditions = []
-        for condition in contrasts_combo:
-            conditions.extend([condition[0], condition[1]])
-        conditions = np.unique(conditions)
+    conditions = []
+    for condition in contrasts_combo:
+        conditions.extend([condition[0], condition[1]])
+    conditions = np.unique(conditions)
 
-        for condition in conditions:
-            precomputed_stats[condition] = _compute_mu_and_sigma(
-                adata, contrast_column=contrast_column, condition=condition
-            )
+    for condition in conditions:
+        precomputed_stats[condition] = _compute_mu_and_sigma(
+            adata, contrast_column=contrast_column, condition=condition
+        )
 
-        for condition in contrasts_combo:
-            _rnk_stats, _num_cells = _compute_s2n(
-                adata,
-                contrast_column=contrast_column,
-                condition_1=condition[0],
-                condition_2=condition[1],
-                precomputed_stats=precomputed_stats,
-            )
-            rnk_stats.append(_rnk_stats)
-            num_cells.append(_num_cells)
-
+    for condition in contrasts_combo:
+        _rnk_stats, _num_cells = _compute_s2n(
+            adata,
+            contrast_column=contrast_column,
+            condition_1=condition[0],
+            condition_2=condition[1],
+            precomputed_stats=precomputed_stats,
+        )
+        rnk_stats.append(_rnk_stats)
+        num_cells.append(_num_cells)
     return pd.concat(rnk_stats, axis=1), pd.concat(num_cells, axis=0)
 
 
@@ -302,7 +242,6 @@ def run_one_enrichment_test(
     seed: int = 2025,
     verbose: bool = False,
     threads: int = 6,
-    ranking_statistic_fn: Callable[..., pd.DataFrame] | None = None,
 ) -> pd.DataFrame | None:
     """Compute cytokine enrichment activity in one cell type using GSEA scoring.
 
@@ -351,12 +290,6 @@ def run_one_enrichment_test(
         Whether to print progress messages.
     threads : int
         Number of threads for GSEA.
-    ranking_statistic_fn : callable or None
-        Custom function to compute the gene ranking statistic instead of the
-        default signal-to-noise ratio.  Must accept
-        ``(adata, contrast_column, condition_1, condition_2)`` and return a
-        single-column ``pd.DataFrame`` with genes as index and column named
-        ``"{condition_1}_vs_{condition_2}"``.
 
     Returns
     -------
@@ -406,10 +339,7 @@ def run_one_enrichment_test(
     # compute ranking stat
     logger.debug("Get ranking stats:")
     rnk_stats, num_cells_per_condition = _compute_ranking_statistic(
-        adata,
-        contrast_column=contrast_column,
-        contrasts_combo=contrasts_combo,
-        ranking_statistic_fn=ranking_statistic_fn,
+        adata, contrast_column=contrast_column, contrasts_combo=contrasts_combo
     )
     logger.debug("Get ranking stats: done.")
     results = []
@@ -500,7 +430,6 @@ def run_all_enrichment_test(
     seed: int = 2025,
     verbose: bool = False,
     threads: int = 6,
-    ranking_statistic_fn: Callable[..., pd.DataFrame] | None = None,
 ) -> pd.DataFrame:
     """Compute cytokine enrichment across multiple threshold values for robustness.
 
@@ -544,12 +473,6 @@ def run_all_enrichment_test(
         Whether to print progress messages.
     threads : int
         Number of threads for GSEA.
-    ranking_statistic_fn : callable or None
-        Custom function to compute the gene ranking statistic instead of the
-        default signal-to-noise ratio.  Must accept
-        ``(adata, contrast_column, condition_1, condition_2)`` and return a
-        single-column ``pd.DataFrame`` with genes as index and column named
-        ``"{condition_1}_vs_{condition_2}"``.
 
     Returns
     -------
@@ -586,7 +509,6 @@ def run_all_enrichment_test(
                     seed=seed,
                     verbose=verbose,
                     threads=threads,
-                    ranking_statistic_fn=ranking_statistic_fn,
                 )
 
                 all_enrichment_results.append(results)
