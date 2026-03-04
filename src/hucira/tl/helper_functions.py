@@ -1,7 +1,9 @@
 import warnings
 
 
-def create_celltype_combos(adata_celltypes=None, hcd_celltypes=None):
+def create_celltype_combos(
+    adata_celltypes: list[str] | None = None, hcd_celltypes: list[str] | None = None
+) -> list[tuple[str, str]] | None:
     """Reformat cell-type names for :func:`run_one_enrichment_test`.
 
     Creates a ``celltype_combos`` list of tuples that matches cell types of the

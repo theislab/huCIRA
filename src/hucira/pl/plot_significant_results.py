@@ -1,12 +1,31 @@
+import logging
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+
+logger = logging.getLogger(__name__)
 
 
-def _format_cytokine_names(x):
+def _check_plot_deps() -> None:
+    """Raise an informative error when optional plotting dependencies are missing."""
+    missing = []
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        missing.append("matplotlib")
+    try:
+        import seaborn  # noqa: F401
+    except ImportError:
+        missing.append("seaborn")
+    if missing:
+        raise ImportError(
+            f"Missing optional plotting dependencies: {', '.join(missing)}. "
+            "Install them with: pip install 'hucira[plot]'"
+        )
+
+
+def _format_cytokine_names(x: str | list | np.ndarray | pd.Index) -> str | list[str]:
     if isinstance(x, (list, np.ndarray, pd.Index)):
         return [_format_cytokine_names(_x) for _x in x]
     text = x.get_text() if hasattr(x, "get_text") else x
@@ -29,7 +48,7 @@ def plot_significant_results(
     fig_path: str = "",
     fig_width: float = 10.0,
     fig_height: float = 12.0,
-):
+) -> None:
     """Plot a heatmap of robust enrichment results.
 
     Plots either the robust results from a dict of contrasts or individually
@@ -60,6 +79,11 @@ def plot_significant_results(
     fig_height : float
         Figure height in inches.
     """
+    _check_plot_deps()
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     # Case 1: robust_results_dict is provided. This precedes the other arguments.
     if robust_results_dict is not None and len(robust_results_dict) > 0:
         n = len(robust_results_dict)
@@ -75,7 +99,7 @@ def plot_significant_results(
             if selected_cytokines:
                 pivot = pivot.loc[selected_cytokines]
                 annot = annot.loc[selected_cytokines]
-                
+
             fig, ax = plt.subplots(figsize=(fig_width, fig_height))
             sns.heatmap(
                 pivot,
@@ -88,11 +112,7 @@ def plot_significant_results(
                 linewidths=0.5,
                 linecolor="white",
                 cbar=True,
-                cbar_kws={
-                    "shrink": 0.5,
-                    "fraction": 0.04,
-                    "pad": 0.02
-                },
+                cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
                 ax=ax,
             )
 
@@ -140,11 +160,7 @@ def plot_significant_results(
             linewidths=0.5,
             linecolor="white",
             cbar=True,
-            cbar_kws={
-                "shrink": 0.5,
-                "fraction": 0.04,
-                "pad": 0.02
-            },
+            cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
             ax=ax,
         )
         ax.set_title("Contrast1_vs_Contrast2", fontsize=10)
@@ -165,5 +181,5 @@ def plot_significant_results(
             plt.savefig(os.path.join(fig_path, "significant_results.svg"), bbox_inches="tight", pad_inches=0, dpi=500)
         return
 
-    print("Nothing was plotted. Check input data!")
+    logger.warning("Nothing was plotted. Check input data!")
     return
