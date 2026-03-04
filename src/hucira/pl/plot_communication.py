@@ -121,7 +121,7 @@ def plot_communication(
         df_tgt = df_tgt.loc[df_tgt.frac_X > frac_expressing_cells_receiver]
     if mean_cytokine_gene_expression_sender is not None:
         df_src = df_src.loc[df_src.mean_X > mean_cytokine_gene_expression_sender]
-    if frac_expressing_cells_receiver is not None:
+    if mean_cytokine_gene_expression_receiver is not None:
         df_tgt = df_tgt.loc[df_tgt.mean_X > mean_cytokine_gene_expression_receiver]
 
     if all_celltypes is None:
