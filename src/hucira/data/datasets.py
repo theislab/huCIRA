@@ -28,7 +28,7 @@ def _download_file(url: str, local_path: str, description: str, disable_cache: b
 
 
 def load_human_cytokine_dict(
-    save_dir: str = "", force_download: bool = False, exclude_well_biased_genes: bool = True
+    save_dir: str = "", force_download: bool = False, mini_version: bool = False, exclude_well_biased_genes: bool = True
 ) -> pd.DataFrame:
     """Download and load the Human Cytokine Dictionary.
 
@@ -40,6 +40,9 @@ def load_human_cytokine_dict(
         Directory where the file will be saved.
     force_download : bool
         Allows user to force a fresh download.
+    mini_version: bool
+        Downloads mini version (2%) of original dictionary (~75MB).
+        Applied filters (adj_p_value < 0.1) & (log_fc.abs() > 0.5) to the original.
     exclude_well_biased_genes : bool
         If True, exclude genes that are well biased according to our
         analysis in the original publication.
@@ -49,14 +52,20 @@ def load_human_cytokine_dict(
     cytokine_dict : pandas.DataFrame
         Human Cytokine Dictionary as a DataFrame.
     """
-    url = "https://cdn.parsebiosciences.com/gigalab/10m/DEGs.csv"
+    if mini_version:
+        url = "https://raw.githubusercontent.com/theislab/HumanCytokineDict/cc733cd/data/human_cytokine_dict_mini.csv"
+        name_extension = "_mini"
+    else:
+        url = "https://cdn.parsebiosciences.com/gigalab/10m/DEGs.csv"
+        name_extension = ""
+
     if save_dir == "":
         save_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
-    local_path = os.path.join(save_dir, "human_cytokine_dict.csv")
+    local_path = os.path.join(save_dir, f"human_cytokine_dict{name_extension}.csv")
 
     if force_download or not os.path.exists(local_path):
-        _download_file(url, local_path, "Human Cytokine Dictionary")
+        _download_file(url, local_path, f"Human Cytokine Dictionary{name_extension}")
         cytokine_dict = pd.read_csv(local_path, index_col=0)
         cytokine_dict = cytokine_dict.reset_index(drop=True)
         cytokine_dict.to_csv(local_path)
@@ -211,10 +220,10 @@ def load_CIP_signatures(save_dir: str = "", force_download: bool = False) -> pd.
 
     if force_download or not os.path.exists(local_path):
         _download_file(url, local_path, "CIP signatures")
-        CIP_signatures = pd.read_csv(local_path, index_col=0)
+        CIP_signatures = pd.read_csv(local_path)
         CIP_signatures.to_csv(local_path, index=False)
     else:
         logger.info("Loading from: %s", local_path)
-        CIP_signatures = pd.read_csv(local_path, index_col=0)
+        CIP_signatures = pd.read_csv(local_path)
 
     return CIP_signatures
