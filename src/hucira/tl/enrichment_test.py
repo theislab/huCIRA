@@ -242,51 +242,37 @@ def _compute_num_cells(adata: AnnData, contrast_column: str, condition_1: str, c
 def _compute_ranking_statistic(
     adata: AnnData,
     contrast_column: str,
-    contrasts_combo: list[tuple[str, str]],
+    contrast_combo: tuple[str, str],
     ranking_statistic_fn: Callable[..., pd.DataFrame] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Deduplicate contrast pairs
-    contrasts_combo = list(dict.fromkeys(contrasts_combo))
-
-    rnk_stats, num_cells = [], []
+    condition_1, condition_2 = contrast_combo
 
     if ranking_statistic_fn is not None:
-        for condition_1, condition_2 in contrasts_combo:
-            _rnk_stats = ranking_statistic_fn(adata, contrast_column, condition_1, condition_2)
-            _num_cells = _compute_num_cells(adata, contrast_column, condition_1, condition_2)
-            rnk_stats.append(_rnk_stats)
-            num_cells.append(_num_cells)
+        rnk_stats = ranking_statistic_fn(adata, contrast_column, condition_1, condition_2)
+        num_cells = _compute_num_cells(adata, contrast_column, condition_1, condition_2)
     else:
         precomputed_stats = {}
-        conditions = []
-        for condition in contrasts_combo:
-            conditions.extend([condition[0], condition[1]])
-        conditions = np.unique(conditions)
-
-        for condition in conditions:
+        for condition in [condition_1, condition_2]:
             precomputed_stats[condition] = _compute_mu_and_sigma(
                 adata, contrast_column=contrast_column, condition=condition
             )
 
-        for condition in contrasts_combo:
-            _rnk_stats, _num_cells = _compute_s2n(
-                adata,
-                contrast_column=contrast_column,
-                condition_1=condition[0],
-                condition_2=condition[1],
-                precomputed_stats=precomputed_stats,
-            )
-            rnk_stats.append(_rnk_stats)
-            num_cells.append(_num_cells)
+        rnk_stats, num_cells = _compute_s2n(
+            adata,
+            contrast_column=contrast_column,
+            condition_1=condition_1,
+            condition_2=condition_2,
+            precomputed_stats=precomputed_stats,
+        )
 
-    return pd.concat(rnk_stats, axis=1), pd.concat(num_cells, axis=0)
+    return rnk_stats, num_cells
 
 
 def run_one_enrichment_test(
     adata: AnnData,
     df: pd.DataFrame,
     celltype_combo: tuple[str, str],
-    contrasts_combo: tuple[str, str] | list[tuple[str, str]],
+    contrast_combo: tuple[str, str],
     celltype_column: str,
     contrast_column: str,
     direction: Literal["upregulated", "downregulated"] = "upregulated",
@@ -325,8 +311,9 @@ def run_one_enrichment_test(
         cell-type name in *df* (second).
     celltype_column : str
         Column name in ``adata.obs`` that stores the cell types.
-    contrasts_combo : tuple of (str, str) or list of tuple
-        Pair(s) of biological conditions to compare.
+    contrast_combo : tuple of (str, str)
+        Pair of biological conditions to compare, e.g.
+        ``("disease", "healthy")``.
     contrast_column : str
         Column name in ``adata.obs`` that stores condition labels.
     direction : str
@@ -364,10 +351,6 @@ def run_one_enrichment_test(
         DataFrame with all computed enrichment scores and statistical
         parameters.  Not filtered by significance or robustness yet.
     """
-    if not isinstance(contrasts_combo, list):
-        assert isinstance(contrasts_combo, tuple)
-        contrasts_combo = [contrasts_combo]
-
     celltype_adata = celltype_combo[0]
     celltype_signature = celltype_combo[1]
 
@@ -408,48 +391,42 @@ def run_one_enrichment_test(
     rnk_stats, num_cells_per_condition = _compute_ranking_statistic(
         adata,
         contrast_column=contrast_column,
-        contrasts_combo=contrasts_combo,
+        contrast_combo=contrast_combo,
         ranking_statistic_fn=ranking_statistic_fn,
     )
     logger.debug("Get ranking stats: done.")
-    results = []
 
-    for contrast_name in rnk_stats.columns:
-        logger.info("Running enrichment for contrast: %s", contrast_name)
-        # format stat so that it can be processed be gseapy
-        rnk = (
-            rnk_stats.loc[:, contrast_name]
-            .replace([np.inf, -np.inf], np.nan)
-            .dropna()
-            .sort_values(ascending=False)
-            .to_frame()
-            .rename({contrast_name: 1}, axis=1)
-            .rename_axis("0")
-        )
+    contrast_name = rnk_stats.columns[0]
+    logger.info("Running enrichment for contrast: %s", contrast_name)
 
-        # run enrichment
-        gp_res = gp.prerank(
-            rnk=rnk,
-            gene_sets=gene_set_dict,
-            min_size=min_size,
-            max_size=max_size,
-            permutation_num=permutation_num,
-            weight=weight,
-            outdir=None,
-            seed=seed,
-            verbose=verbose,
-            threads=threads,
-        )
-        _res = gp_res.res2d
-        _res.loc[:, "contrast"] = contrast_name
-        _res.loc[:, "num_cells_1"] = num_cells_per_condition.loc[contrast_name, "num_cells_1"]
-        _res.loc[:, "num_cells_2"] = num_cells_per_condition.loc[contrast_name, "num_cells_2"]
-        _res.loc[:, "percent_duplicate_ranking_stats"] = (rnk.duplicated(keep="first").sum() / rnk.shape[0]) * 100
-        results.append(_res)
-        logger.debug("%s: done.", contrast_name)
+    rnk = (
+        rnk_stats.loc[:, contrast_name]
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna()
+        .sort_values(ascending=False)
+        .to_frame()
+        .rename({contrast_name: 1}, axis=1)
+        .rename_axis("0")
+    )
 
-    # combine results and save hyperparams
-    results = pd.concat(results, axis=0, ignore_index=True)
+    gp_res = gp.prerank(
+        rnk=rnk,
+        gene_sets=gene_set_dict,
+        min_size=min_size,
+        max_size=max_size,
+        permutation_num=permutation_num,
+        weight=weight,
+        outdir=None,
+        seed=seed,
+        verbose=verbose,
+        threads=threads,
+    )
+    results = gp_res.res2d
+    results.loc[:, "contrast"] = contrast_name
+    results.loc[:, "num_cells_1"] = num_cells_per_condition.loc[contrast_name, "num_cells_1"]
+    results.loc[:, "num_cells_2"] = num_cells_per_condition.loc[contrast_name, "num_cells_2"]
+    results.loc[:, "percent_duplicate_ranking_stats"] = (rnk.duplicated(keep="first").sum() / rnk.shape[0]) * 100
+    logger.debug("%s: done.", contrast_name)
     results.loc[:, "celltype_adata"] = celltype_adata
     results.loc[:, "celltype_signature"] = celltype_signature
     results.loc[:, "celltype_combo"] = f"{celltype_adata} ({celltype_signature})"
@@ -485,7 +462,7 @@ def run_all_enrichment_test(
     df: pd.DataFrame,
     celltype_combos: list[tuple[str, str]],
     celltype_column: str,
-    contrasts_combo: tuple[str, str] | list[tuple[str, str]],
+    contrast_combo: tuple[str, str],
     contrast_column: str,
     direction: Literal["upregulated", "downregulated"] = "upregulated",
     # Filtering parameters for gene set construction
@@ -518,8 +495,9 @@ def run_all_enrichment_test(
         List of ``(query_celltype, df_celltype)`` pairs.
     celltype_column : str
         Column name in ``adata.obs`` that stores the cell types.
-    contrasts_combo : tuple of (str, str) or list of tuple
-        Pair(s) of biological conditions to compare.
+    contrast_combo : tuple of (str, str)
+        Pair of biological conditions to compare, e.g.
+        ``("disease", "healthy")``.
     contrast_column : str
         Column name in ``adata.obs`` that stores condition labels.
     direction : str
@@ -571,7 +549,7 @@ def run_all_enrichment_test(
                     df=df,
                     celltype_combo=celltype_combo,
                     celltype_column=celltype_column,
-                    contrasts_combo=contrasts_combo,
+                    contrast_combo=contrast_combo,
                     contrast_column=contrast_column,
                     direction=direction,
                     # Robustness parameters

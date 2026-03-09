@@ -40,7 +40,7 @@ def _format_cytokine_names(x: str | list | np.ndarray | pd.Index) -> str | list[
 def plot_significant_results(
     results_pivot: pd.DataFrame,
     df_annot: pd.DataFrame,
-    robust_results_dict: dict[str, pd.DataFrame] | None = None,
+    robust_results: list | None = None,
     selected_celltypes: list[str] | None = None,
     selected_cytokines: list[str] | None = None,
     fontsize: float = 6.0,
@@ -49,19 +49,16 @@ def plot_significant_results(
     fig_width: float = 10.0,
     fig_height: float = 12.0,
 ) -> None:
-    """Plot a heatmap of robust enrichment results.
-
-    Plots either the robust results from a dict of contrasts or individually
-    per contrast.
+    """Plot a heatmap of robust enrichment results for a single contrast.
 
     Parameters
     ----------
     results_pivot : pandas.DataFrame
-        Pivot DataFrame of robust enrichment scores for one contrast.
+        Pivot DataFrame of robust enrichment scores.
     df_annot : pandas.DataFrame
-        Annotation DataFrame of significance stars for one contrast.
-    robust_results_dict : dict or None
-        Robust enrichment score dictionary from
+        Annotation DataFrame of significance stars.
+    robust_results : list or None
+        ``[pivot_df, annot_df, robust_sub]`` from
         :func:`~hucira.get_robust_significant_results`.  If provided, takes
         precedence over *results_pivot* and *df_annot*.
     selected_celltypes : list of str or None
@@ -84,62 +81,9 @@ def plot_significant_results(
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    # Case 1: robust_results_dict is provided. This precedes the other arguments.
-    if robust_results_dict is not None and len(robust_results_dict) > 0:
-        n = len(robust_results_dict)
-        fig, axes = plt.subplots(1, n, squeeze=False)
+    if robust_results is not None and len(robust_results) > 0:
+        results_pivot, df_annot, _ = robust_results
 
-        for i, (contrast, (pivot, annot, _)) in enumerate(robust_results_dict.items()):
-            ax = axes[0, i]
-
-            # Apply filtering if requested
-            if selected_celltypes:
-                pivot = pivot.T.loc[selected_celltypes].T
-                annot = annot.T.loc[selected_celltypes].T
-            if selected_cytokines:
-                pivot = pivot.loc[selected_cytokines]
-                annot = annot.loc[selected_cytokines]
-
-            fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-            sns.heatmap(
-                pivot,
-                square=True,
-                annot=annot,
-                cmap="RdBu_r",
-                center=0,
-                annot_kws={"fontsize": fontsize, "family": "sans-serif"},
-                fmt="",
-                linewidths=0.5,
-                linecolor="white",
-                cbar=True,
-                cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
-                ax=ax,
-            )
-
-            ax.set_title(contrast, fontsize=10)
-            ax.set_xlabel("")
-            ax.set_ylabel("")
-            ax.set_facecolor("lightgray")
-            ax.tick_params(axis="both", which="both", length=0)
-
-            # Axis labels
-            ax.set_xticks(0.5 + np.arange(pivot.shape[1]))
-            ax.set_xticklabels(pivot.columns, fontsize=fontsize, rotation=90, ha="center")
-            ax.set_yticks(0.5 + np.arange(pivot.shape[0]))
-            ax.set_yticklabels(_format_cytokine_names(pivot.index), fontsize=fontsize, rotation=0, ha="right")
-
-        if save_fig:
-            plt.savefig(
-                os.path.join(fig_path, "all_contrasts_significant_results.svg"),
-                bbox_inches="tight",
-                pad_inches=0,
-                dpi=500,
-            )
-        plt.tight_layout()
-        plt.show()
-        return
-
-    # Case 2: single robust_result is provided, only the one chosen contrast comparison is plotted.
     if isinstance(results_pivot, pd.DataFrame) and isinstance(df_annot, pd.DataFrame):
         if selected_celltypes:
             results_pivot = results_pivot.T.loc[selected_celltypes].T

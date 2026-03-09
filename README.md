@@ -42,7 +42,7 @@ human_cytokine_dictionary = hc.load_human_cytokine_dict(save_dir="path/to/your_d
 enrichment_results = hc.run_one_enrichment_test(
     adata = adata,
     df = human_cytokine_dictionary,
-    contrasts_combo = ("healthy", "disease"),
+    contrast_combo = ("healthy", "disease"),
     celltype_combo = ("B cell", "B_cell"),
     contrast_column = "condition",
     celltype_column = "cell_type",

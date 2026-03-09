@@ -35,7 +35,8 @@ def check_robustness(
     """Filter for robust and significant results out of original enrichments.
 
     Returns only the enrichments that are stable across many different tests
-    and that are statistically significant.
+    and that are statistically significant.  Operates on results from a single
+    contrast.
 
     Parameters
     ----------
@@ -66,7 +67,6 @@ def check_robustness(
 
     robust_results = []
 
-    # Get gene_program name of your enrichment analysis.
     if "cytokine" in all_results.columns:
         gene_program = "cytokine"
     elif "CIP" in all_results.columns:
@@ -77,44 +77,43 @@ def check_robustness(
         raise ValueError("Missing column that is defining gene programs in 'all_results'.")
         return
 
-    for contrast in tqdm(all_results.contrast.unique()):
-        for celltype_combo in all_results.celltype_combo.unique():
-            results_ct = all_results.loc[
-                (all_results.celltype_combo == celltype_combo) & (all_results.contrast == contrast)
-            ]
-            for program in results_ct[gene_program].unique():
-                results_ct_cy = results_ct.loc[results_ct[gene_program] == program]
-                df_pivot = results_ct_cy.pivot(
-                    index="threshold_expression", columns="threshold_lfc", values="FDR q-val"
-                )
-                with warnings.catch_warnings():
-                    warnings.simplefilter(action="ignore", category=FutureWarning)
-                    df_combined = pd.concat([df, df_pivot])
-                df_merged = df_combined.combine_first(df_pivot)
-                df_merged = df_merged.loc[~df_merged.index.duplicated()]
-                df_pivot = df_merged.loc[all_thresholds_expression, all_thresholds_lfc].astype(float)
-                frac_valid_results, frac_pval_below_alpha, is_robust = _check_robustness_fractions(
-                    df_pivot,
-                    threshold_qval=threshold_qval,
-                    threshold_valid=threshold_valid,
-                    threshold_below_alpha=threshold_below_alpha,
-                )
+    contrast = all_results.contrast.unique()[0]
 
-                if is_robust:
-                    robust_results.append(
-                        (
-                            celltype_combo,
-                            contrast,
-                            program,
-                            frac_valid_results,
-                            frac_pval_below_alpha,
-                            is_robust,
-                            results_ct_cy.NES.min(),
-                            results_ct_cy.NES.max(),
-                            threshold_qval,
-                            threshold_below_alpha,
-                        )
+    for celltype_combo in tqdm(all_results.celltype_combo.unique()):
+        results_ct = all_results.loc[
+            (all_results.celltype_combo == celltype_combo) & (all_results.contrast == contrast)
+        ]
+        for program in results_ct[gene_program].unique():
+            results_ct_cy = results_ct.loc[results_ct[gene_program] == program]
+            df_pivot = results_ct_cy.pivot(index="threshold_expression", columns="threshold_lfc", values="FDR q-val")
+            with warnings.catch_warnings():
+                warnings.simplefilter(action="ignore", category=FutureWarning)
+                df_combined = pd.concat([df, df_pivot])
+            df_merged = df_combined.combine_first(df_pivot)
+            df_merged = df_merged.loc[~df_merged.index.duplicated()]
+            df_pivot = df_merged.loc[all_thresholds_expression, all_thresholds_lfc].astype(float)
+            frac_valid_results, frac_pval_below_alpha, is_robust = _check_robustness_fractions(
+                df_pivot,
+                threshold_qval=threshold_qval,
+                threshold_valid=threshold_valid,
+                threshold_below_alpha=threshold_below_alpha,
+            )
+
+            if is_robust:
+                robust_results.append(
+                    (
+                        celltype_combo,
+                        contrast,
+                        program,
+                        frac_valid_results,
+                        frac_pval_below_alpha,
+                        is_robust,
+                        results_ct_cy.NES.min(),
+                        results_ct_cy.NES.max(),
+                        threshold_qval,
+                        threshold_below_alpha,
                     )
+                )
 
     robust_results = pd.DataFrame(robust_results).rename(
         {
@@ -140,11 +139,11 @@ def get_robust_significant_results(
     threshold_valid: float = 0.1,
     threshold_below_alpha: float = 0.9,
     display_df_nicely: bool = True,
-) -> dict | None:
+) -> list | None:
     """Filter for robust and significant results from original enrichments.
 
     Returns only the enrichments that are statistically significant (q-val)
-    and stable across many different tests (per contrast).  Calls
+    and stable across many different tests for a single contrast.  Calls
     :func:`check_robustness` for different q-val thresholds to explore more
     stringent significance thresholds.  Use for visualization of results
     (e.g. in a heatmap).
@@ -167,16 +166,14 @@ def get_robust_significant_results(
 
     Returns
     -------
-    dict
-        Dictionary mapping contrasts to lists of the enrichment score results
-        (*pivot_df*), their significance annotations (*annot_df*), and
-        significance thresholds (*robust_sub*).
+    list
+        A list of ``[pivot_df, annot_df, robust_sub]`` containing the
+        enrichment score results, their significance annotations, and
+        significance thresholds for the single contrast.
     """
-    # default significant values (matching significance stars)
     if alphas is None:
         alphas = [0.1, 0.05, 0.01]
 
-    # Get gene_program name of your enrichment analysis.
     if "cytokine" in results.columns:
         gene_program = "cytokine"
     elif "CIP" in results.columns:
@@ -200,7 +197,6 @@ def get_robust_significant_results(
 
     results_robust = pd.concat(results_robust)
 
-    # if none of the results in the df pass the filter, exit out and don't return anything.
     if results_robust.empty:
         logger.warning("No robust results to process. Exiting function.")
         return
@@ -221,37 +217,30 @@ def get_robust_significant_results(
         .reset_index()
     )
 
-    # Create separate robust results dict for every contrast pair.
-    robust_results_dict = {}
-    for contrast in results.contrast.unique():
-        subset = results_mean[results_mean.contrast == contrast]
-        pivot_df = subset.pivot(index=gene_program, columns="celltype_combo", values="NES")
+    contrast = results.contrast.unique()[0]
+    subset = results_mean[results_mean.contrast == contrast]
+    pivot_df = subset.pivot(index=gene_program, columns="celltype_combo", values="NES")
 
-        # create empty annotation df
-        annot_df = pivot_df.copy().astype(object)
-        annot_df[:] = ""
+    annot_df = pivot_df.copy().astype(object)
+    annot_df[:] = ""
 
-        # fill annotations based on results_robust
-        robust_sub = results_robust[results_robust.contrast == contrast]
-        for program in annot_df.index:
-            for celltype in annot_df.columns:
-                qval = robust_sub.loc[
-                    (robust_sub[gene_program] == program) & (robust_sub.celltype_combo == celltype), "qval_threshold"
-                ]
-                if len(qval) != 0:
-                    qval = qval.values[0]
-                    if qval == 0.1:
-                        annot_df.loc[program, celltype] = "*"
-                    elif qval == 0.05:
-                        annot_df.loc[program, celltype] = "**"
-                    elif qval == 0.01:
-                        annot_df.loc[program, celltype] = "***"
-
-        robust_results_dict[contrast] = [pivot_df, annot_df, robust_sub]
+    robust_sub = results_robust[results_robust.contrast == contrast]
+    for program in annot_df.index:
+        for celltype in annot_df.columns:
+            qval = robust_sub.loc[
+                (robust_sub[gene_program] == program) & (robust_sub.celltype_combo == celltype), "qval_threshold"
+            ]
+            if len(qval) != 0:
+                qval = qval.values[0]
+                if qval == 0.1:
+                    annot_df.loc[program, celltype] = "*"
+                elif qval == 0.05:
+                    annot_df.loc[program, celltype] = "**"
+                elif qval == 0.01:
+                    annot_df.loc[program, celltype] = "***"
 
     if display_df_nicely:
-        for contrast in robust_results_dict.keys():
-            logger.info("Contrast: %s", contrast)
-            display(robust_results_dict[contrast][0])
+        logger.info("Contrast: %s", contrast)
+        display(robust_sub)
 
-    return robust_results_dict
+    return [pivot_df, annot_df, robust_sub]
