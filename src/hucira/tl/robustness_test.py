@@ -110,6 +110,7 @@ def check_robustness(
                         is_robust,
                         results_ct_cy.NES.min(),
                         results_ct_cy.NES.max(),
+                        results_ct_cy["FDR q-val"].min(),
                         threshold_qval,
                         threshold_below_alpha,
                     )
@@ -125,8 +126,9 @@ def check_robustness(
             5: "is_robust",
             6: "NES_min",
             7: "NES_max",
-            8: "qval_threshold",
-            9: "threshold_frac_below_alpha",
+            8: "FDR q-val",
+            9: "qval_threshold",
+            10: "threshold_frac_below_alpha",
         },
         axis=1,
     )
