@@ -60,6 +60,7 @@ optional-dependencies.doc = [
 ]
 optional-dependencies.plot = [
   "bokeh",
+  "matplotlib",
   "pycirclize",
   "seaborn>=0.13.2",
 ]

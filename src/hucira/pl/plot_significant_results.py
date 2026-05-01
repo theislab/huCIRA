@@ -38,36 +38,34 @@ def _format_cytokine_names(x: str | list | np.ndarray | pd.Index) -> str | list[
 
 
 def plot_significant_results(
-    results_pivot: pd.DataFrame,
-    df_annot: pd.DataFrame,
-    robust_results_dict: dict[str, pd.DataFrame] | None = None,
+    nes_plot_df: pd.DataFrame,
+    annot_plot_df: pd.DataFrame,
+    robust_results: pd.DataFrame | None = None,
     selected_celltypes: list[str] | None = None,
     selected_cytokines: list[str] | None = None,
+    ax=None,
     fontsize: float = 6.0,
     save_fig: bool = False,
     fig_path: str = "",
     fig_width: float = 10.0,
     fig_height: float = 12.0,
 ) -> None:
-    """Plot a heatmap of robust enrichment results.
-
-    Plots either the robust results from a dict of contrasts or individually
-    per contrast.
+    """Plot a heatmap of robust enrichment results for a single contrast.
 
     Parameters
     ----------
-    results_pivot : pandas.DataFrame
-        Pivot DataFrame of robust enrichment scores for one contrast.
-    df_annot : pandas.DataFrame
-        Annotation DataFrame of significance stars for one contrast.
-    robust_results_dict : dict or None
-        Robust enrichment score dictionary from
-        :func:`~hucira.get_robust_significant_results`.  If provided, takes
-        precedence over *results_pivot* and *df_annot*.
+    nes_plot_df : pandas.DataFrame
+        Pivot DataFrame of robust enrichment scores.
+    annot_plot_df : pandas.DataFrame
+        Annotation DataFrame of significance stars.
+    robust_results : pandas.DataFrame or None
+        Robust results DataFrame from :func:`~hucira.get_robust_significant_results`.
     selected_celltypes : list of str or None
         Subset of cell types to visualise.
     selected_cytokines : list of str or None
         Subset of cytokines to visualise.
+    ax : matplotlib.axes.Axes or None
+        An existing Axes to plot on.  If ``None``, a new figure is created.
     fontsize : float
         Font size for annotations and tick labels.
     save_fig : bool
@@ -84,75 +82,28 @@ def plot_significant_results(
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    # Case 1: robust_results_dict is provided. This precedes the other arguments.
-    if robust_results_dict is not None and len(robust_results_dict) > 0:
-        n = len(robust_results_dict)
-        fig, axes = plt.subplots(1, n, squeeze=False)
+    if robust_results is not None and not robust_results.empty:
+        contrast_name = robust_results.contrast.iloc[0]
+    else:
+        contrast_name = "Contrast1_vs_Contrast2"
 
-        for i, (contrast, (pivot, annot, _)) in enumerate(robust_results_dict.items()):
-            ax = axes[0, i]
-
-            # Apply filtering if requested
-            if selected_celltypes:
-                pivot = pivot.T.loc[selected_celltypes].T
-                annot = annot.T.loc[selected_celltypes].T
-            if selected_cytokines:
-                pivot = pivot.loc[selected_cytokines]
-                annot = annot.loc[selected_cytokines]
-
-            fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-            sns.heatmap(
-                pivot,
-                square=True,
-                annot=annot,
-                cmap="RdBu_r",
-                center=0,
-                annot_kws={"fontsize": fontsize, "family": "sans-serif"},
-                fmt="",
-                linewidths=0.5,
-                linecolor="white",
-                cbar=True,
-                cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
-                ax=ax,
-            )
-
-            ax.set_title(contrast, fontsize=10)
-            ax.set_xlabel("")
-            ax.set_ylabel("")
-            ax.set_facecolor("lightgray")
-            ax.tick_params(axis="both", which="both", length=0)
-
-            # Axis labels
-            ax.set_xticks(0.5 + np.arange(pivot.shape[1]))
-            ax.set_xticklabels(pivot.columns, fontsize=fontsize, rotation=90, ha="center")
-            ax.set_yticks(0.5 + np.arange(pivot.shape[0]))
-            ax.set_yticklabels(_format_cytokine_names(pivot.index), fontsize=fontsize, rotation=0, ha="right")
-
-        if save_fig:
-            plt.savefig(
-                os.path.join(fig_path, "all_contrasts_significant_results.svg"),
-                bbox_inches="tight",
-                pad_inches=0,
-                dpi=500,
-            )
-        plt.tight_layout()
-        plt.show()
-        return
-
-    # Case 2: single robust_result is provided, only the one chosen contrast comparison is plotted.
-    if isinstance(results_pivot, pd.DataFrame) and isinstance(df_annot, pd.DataFrame):
+    if isinstance(nes_plot_df, pd.DataFrame) and isinstance(annot_plot_df, pd.DataFrame):
         if selected_celltypes:
-            results_pivot = results_pivot.T.loc[selected_celltypes].T
-            df_annot = df_annot.T.loc[selected_celltypes].T
+            nes_plot_df = nes_plot_df.T.loc[selected_celltypes].T
+            annot_plot_df = annot_plot_df.T.loc[selected_celltypes].T
         if selected_cytokines:
-            results_pivot = results_pivot.loc[selected_cytokines]
-            df_annot = df_annot.loc[selected_cytokines]
+            nes_plot_df = nes_plot_df.loc[selected_cytokines]
+            annot_plot_df = annot_plot_df.loc[selected_cytokines]
 
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+        created_fig = ax is None
+        if created_fig:
+            fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+        else:
+            fig = ax.get_figure()
         sns.heatmap(
-            results_pivot,
+            nes_plot_df,
             square=True,
-            annot=df_annot,
+            annot=annot_plot_df,
             cmap="RdBu_r",
             center=0,
             annot_kws={"fontsize": fontsize, "family": "sans-serif"},
@@ -163,22 +114,27 @@ def plot_significant_results(
             cbar_kws={"shrink": 0.5, "fraction": 0.04, "pad": 0.02},
             ax=ax,
         )
-        ax.set_title("Contrast1_vs_Contrast2", fontsize=10)
+        ax.set_title(contrast_name, fontsize=10)
         ax.set_xlabel("")
         ax.set_ylabel("")
         ax.set_facecolor("lightgray")
         ax.tick_params(axis="both", which="both", length=0)
 
         # Axis labels
-        ax.set_xticks(0.5 + np.arange(results_pivot.shape[1]))
-        ax.set_xticklabels(results_pivot.columns, fontsize=fontsize, rotation=90, ha="center")
-        ax.set_yticks(0.5 + np.arange(results_pivot.shape[0]))
-        ax.set_yticklabels(_format_cytokine_names(results_pivot.index), fontsize=fontsize, rotation=0, ha="right")
-
-        plt.show()
+        ax.set_xticks(0.5 + np.arange(nes_plot_df.shape[1]))
+        ax.set_xticklabels(nes_plot_df.columns, fontsize=fontsize, rotation=90, ha="center")
+        ax.set_yticks(0.5 + np.arange(nes_plot_df.shape[0]))
+        ax.set_yticklabels(_format_cytokine_names(nes_plot_df.index), fontsize=fontsize, rotation=0, ha="right")
 
         if save_fig:
-            plt.savefig(os.path.join(fig_path, "significant_results.svg"), bbox_inches="tight", pad_inches=0, dpi=500)
+            fig.savefig(
+                os.path.join(fig_path, f"heatmap_significant_results_{contrast_name}.svg"),
+                bbox_inches="tight",
+                pad_inches=0,
+                dpi=500,
+            )
+        if created_fig:
+            plt.show()
         return
 
     logger.warning("Nothing was plotted. Check input data!")

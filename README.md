@@ -25,7 +25,7 @@ To get started, simply supply a transcriptomic dataset annotated with immune cel
 
 ## Demo
 
-Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/Tutorial_huCIRA_Lupus_hcd.ipynb) for an example of a full pipeline and outputs.
+Please refer to this [tutorial](https://github.com/theislab/huCIRA/blob/main/docs/notebooks/quick_start_cytokine_enrichment.ipynb) for a quick start example and outputs.
 
 The core analysis is happening here:
 ```python
@@ -42,7 +42,7 @@ human_cytokine_dictionary = hc.load_human_cytokine_dict(save_dir="path/to/your_d
 enrichment_results = hc.run_one_enrichment_test(
     adata = adata,
     df = human_cytokine_dictionary,
-    contrasts_combo = ("healthy", "disease"),
+    contrast_combo = ("healthy", "disease"),
     celltype_combo = ("B cell", "B_cell"),
     contrast_column = "condition",
     celltype_column = "cell_type",
