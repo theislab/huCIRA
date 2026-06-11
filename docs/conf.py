@@ -103,6 +103,7 @@ intersphinx_mapping = {
     "scanpy": ("https://scanpy.readthedocs.io/en/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
 }
 
 # List of patterns, relative to source directory, that match files and
@@ -137,6 +138,7 @@ nitpick_ignore = [
     ("py:class", "pandas.DataFrame"),
     ("py:class", "pandas.core.frame.DataFrame"),
     ("py:class", "AnnData"),
+    ("py:class", "callable"),
 ]
 
 nitpick_ignore_regex = [
