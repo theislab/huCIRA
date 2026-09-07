@@ -12,6 +12,17 @@
     run_all_enrichment_test
 ```
 
+## Contrast-free Activity Scoring
+
+```{eval-rst}
+.. autosummary::
+    :toctree: ../generated
+
+    run_one_ulm_test
+    run_all_ulm_test
+    get_cytokine_net
+```
+
 ## Robustness Analysis
 
 ```{eval-rst}

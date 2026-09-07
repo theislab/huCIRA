@@ -1,9 +1,13 @@
+from .activity import get_cytokine_net, run_all_ulm_test, run_one_ulm_test
 from .cytokine_communication import get_all_senders_and_receivers, get_one_senders_and_receivers
 from .enrichment_test import run_all_enrichment_test, run_one_enrichment_test
 from .helper_functions import create_celltype_combos
 from .robustness_test import check_robustness, get_robust_significant_results
 
 __all__ = [
+    "get_cytokine_net",
+    "run_one_ulm_test",
+    "run_all_ulm_test",
     "get_one_senders_and_receivers",
     "get_all_senders_and_receivers",
     "run_one_enrichment_test",

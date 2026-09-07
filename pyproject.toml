@@ -41,6 +41,9 @@ optional-dependencies.dev = [
   "pre-commit",
   "twine>=4.0.2",
 ]
+optional-dependencies.activity = [
+  "decoupler>=2.0",
+]
 optional-dependencies.doc = [
   "docutils>=0.8,!=0.18.*,!=0.19.*",
   "ipykernel",
@@ -66,6 +69,7 @@ optional-dependencies.plot = [
 ]
 optional-dependencies.test = [
   "coverage>=7.10",
+  "decoupler>=2.0",
   "ipython",
   "pytest",
 ]

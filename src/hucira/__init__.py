@@ -13,10 +13,13 @@ from .tl import (
     check_robustness,
     create_celltype_combos,
     get_all_senders_and_receivers,
+    get_cytokine_net,
     get_one_senders_and_receivers,
     get_robust_significant_results,
     run_all_enrichment_test,
+    run_all_ulm_test,
     run_one_enrichment_test,
+    run_one_ulm_test,
 )
 
 # Configure library-level logger so INFO messages are visible by default.
@@ -34,6 +37,9 @@ __all__ = [
     "get_robust_significant_results",
     "run_one_enrichment_test",
     "run_all_enrichment_test",
+    "get_cytokine_net",
+    "run_one_ulm_test",
+    "run_all_ulm_test",
     "plot_significant_results",
     "plot_communication",
     "get_one_senders_and_receivers",
